@@ -1005,12 +1005,24 @@ async function startRealScan(file) {
 
   let progressInterval = null;
 
+  // פונקציית עזר לביצוע בקשות עם מנגנון עקיפת חסימות אוטומטי
+  const fetchVT = async (url, options) => {
+    try {
+      return await fetch(url, options);
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      console.warn('בקשה ישירה נכשלה עקב חסימת CORS או תוסף פרטיות. עובר לפרוקסי...', err);
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      return await fetch(proxyUrl, options);
+    }
+  };
+
   try {
     // ── Step 1: Get upload URL for large files ──────────────────
     let uploadUrl = 'https://www.virustotal.com/api/v3/files';
     if (isLarge) {
       updateScanVerdict(id, 'מקבל URL להעלאה...');
-      const urlRes = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
+      const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
         headers: { 'x-apikey': apiKey },
         signal: abort.signal,
       });
@@ -1035,7 +1047,7 @@ async function startRealScan(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetchVT(uploadUrl, {
       method: 'POST',
       headers: { 'x-apikey': apiKey },
       body: formData,
@@ -1071,7 +1083,7 @@ async function startRealScan(file) {
 
       pollCount++;
       try {
-        const pollRes = await fetch(
+        const pollRes = await fetchVT(
           `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
           { headers: { 'x-apikey': apiKey }, signal: abort.signal }
         );
@@ -1080,7 +1092,7 @@ async function startRealScan(file) {
           await sleep(15000); // extra wait on rate limit
           continue;
         }
-        if (!pollRes.ok) throw new Error(`שגיאת poll HTTP ${pollRes.status}`);
+        if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status} בבדיקת מצב`);
 
         consecutiveErrors = 0;
         const pollData = await pollRes.json();
