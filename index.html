@@ -50,9 +50,10 @@
 /* ═══════════════ RESET ═══════════════ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;scrollbar-width:none}
 *::-webkit-scrollbar{display:none}
-html,body,#app{height:100%;overflow:hidden;background:var(--bg)}
+html,body{min-height:100%;background:var(--bg)}
+#app{min-height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative}
 body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background .4s;color:var(--text)}
-
+  
 /* ═══════════════ KEYFRAMES ═══════════════ */
 @keyframes floatSlow{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.02)}}
 @keyframes floatSlower{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(.98)}}
@@ -70,16 +71,8 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* ═══════════════ LAYOUT ═══════════════ */
-.main-wrap{padding-top:var(--status-h)}
-#app{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100%;position:relative;overflow:hidden}
-
-/* ═══════════════ STATUS BAR ═══════════════ */
-.status-bar{height:var(--status-h);display:flex;align-items:center;padding:0 20px;justify-content:space-between;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:60;background:var(--surface-solid);backdrop-filter:blur(48px);font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.04em}
-.status-icons{display:flex;gap:6px;align-items:center}
-.status-icons svg{width:14px;height:14px}
-.offline-pill{display:none;align-items:center;gap:5px;font-size:9px;font-weight:800;color:var(--rose);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.15);border-radius:99px;padding:2px 8px}
-.offline-pill.show{display:flex}
-.offline-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--rose)}
+.main-wrap { padding-top: 0; }
+#app { display:flex; flex-direction:column; max-width:430px; margin:0 auto; min-height:100vh; position:relative; }
 
 /* ═══════════════ HEADER ═══════════════ */
 .header{background:var(--surface-solid);backdrop-filter:blur(48px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
@@ -501,17 +494,6 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 
 <!-- NETWORK STATUS BANNER -->
 <div class="network-banner" id="networkBanner">⚠️ אין חיבור לאינטרנט — הסריקה דורשת רשת</div>
-
-<div class="status-bar">
-  <div class="time-display" id="statusTime">12:00</div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <div class="offline-pill" id="offlinePill">אופליין</div>
-    <div class="status-icons">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>
-    </div>
-  </div>
 </div>
 
 <div id="app" class="main-wrap">
@@ -1009,10 +991,8 @@ function init() {
     scans = scans.filter(s => s.status !== 'scanning');
   } catch { scans = []; }
 
-  applyTheme();
+ applyTheme();
   updateNotifsUI();
-  updateStatusTime();
-  setInterval(updateStatusTime, 30000);
   renderAll();
   updateNotifPermBtn();
   setupNetworkMonitor();
@@ -1164,14 +1144,6 @@ function toggleDarkMode() {
 }
 
 /* ═══════════════════════════════════════════════
-   STATUS TIME
-═══════════════════════════════════════════════ */
-function updateStatusTime() {
-  document.getElementById('statusTime').textContent =
-    new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-}
-
-/* ═══════════════════════════════════════════════
    NOTIFICATIONS
 ═══════════════════════════════════════════════ */
 function toggleNotifications() {
@@ -1271,25 +1243,32 @@ function processFile(file) {
    FETCH WITH CORS FALLBACK
 ═══════════════════════════════════════════════ */
 async function fetchVT(url, options) {
-  // Try direct first
+  let res;
   try {
-    const res = await fetch(url, options);
-    return res;
+    res = await fetch(url, options);
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    // If CORS/network error, try proxies (GET only — FormData not proxiable)
-    if (options && options.method === 'POST') throw err;
-    for (const makeProxy of PROXY_LIST) {
-      try {
-        const proxyUrl = makeProxy(url);
-        const res = await fetch(proxyUrl, { ...options, body: undefined, method: 'GET' });
-        if (res.ok) return res;
-      } catch(pe) {
-        if (pe.name === 'AbortError') throw pe;
-      }
+    console.warn('בקשה ישירה נחסמה. מנסה פרוקסי...', url);
+    try {
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      res = await fetch(proxyUrl, options);
+    } catch (pe) {
+      if (pe.name === 'AbortError') throw pe;
+      throw new Error('שגיאת רשת מוחלטת - ייתכן שחוסם פרסומות חוסם את התקשורת.');
     }
-    throw err;
   }
+
+  // קריאה בטוחה כדי למנוע שגיאות JSON אם הפרוקסי מחזיר עמוד שגיאת HTML
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (e) {
+    if (res.status === 429) throw new Error('חרגת ממגבלת הבקשות של VirusTotal. המתן דקה ונסה שוב.');
+    throw new Error('שגיאת תקשורת עם השרת (התקבל נתון לא תקין).');
+  }
+
+  return { ok: res.ok, status: res.status, data };
 }
 
 /* ═══════════════════════════════════════════════
@@ -1298,7 +1277,7 @@ async function fetchVT(url, options) {
 async function startRealScan(file) {
   const apiKey = localStorage.getItem('vts_key');
   if (!apiKey || apiKey.length < 32) {
-    showToast('נדרש מפתח API של VirusTotal', 'error');
+    showToast('נדרש מפתח API מלא של VirusTotal', 'error');
     switchTab('settings');
     return;
   }
@@ -1333,7 +1312,7 @@ async function startRealScan(file) {
     let uploadUrl = 'https://www.virustotal.com/api/v3/files';
     if (isLarge) {
       updateScanVerdict(id, 'מקבל URL להעלאה...');
-      const urlRes = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
+      const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
         headers: { 'x-apikey': apiKey },
         signal: abort.signal,
       });
@@ -1343,8 +1322,7 @@ async function startRealScan(file) {
         if (urlRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
         throw new Error(`שגיאה בקבלת URL להעלאה (HTTP ${urlRes.status})`);
       }
-      const urlData = await urlRes.json();
-      uploadUrl = urlData.data;
+      uploadUrl = urlRes.data?.data;
       if (!uploadUrl) throw new Error('תשובת API לא תקינה לקבלת URL');
     }
 
@@ -1361,7 +1339,7 @@ async function startRealScan(file) {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetchVT(uploadUrl, {
       method: 'POST',
       headers: { 'x-apikey': apiKey },
       body: formData,
@@ -1380,15 +1358,13 @@ async function startRealScan(file) {
       throw new Error(`שגיאה בהעלאה (HTTP ${uploadRes.status})`);
     }
 
-    const uploadData = await uploadRes.json();
-    const analysisId = uploadData?.data?.id;
+    const analysisId = uploadRes.data?.data?.id;
     if (!analysisId) throw new Error('תשובת VT API לא תקינה — אין מזהה ניתוח');
 
     /* ── Step 3: Poll for results (86 → 97%) ────────────── */
     updateScanVerdict(id, 'ממתין לניתוח...');
     updateActiveScan(id, 86);
 
-    // Slow progress animation during polling so it never looks stuck
     let pollProg = 86;
     pollProgressInterval = setInterval(() => {
       if (!activeScans[id]) { clearInterval(pollProgressInterval); return; }
@@ -1399,7 +1375,7 @@ async function startRealScan(file) {
     let finalData = null;
     let pollData  = null;
     let pollCount = 0;
-    const MAX_POLLS = 90; // 90 × 4 s = 6 min max
+    const MAX_POLLS = 90;
     let consecutiveErrors = 0;
     const pollMessages = ['ממתין לניתוח...', 'מנתח...', 'בודק מנועים...', 'כמעט מוכן...'];
 
@@ -1419,14 +1395,13 @@ async function startRealScan(file) {
           continue;
         }
         if (pollRes.status === 404) {
-          // Analysis not yet indexed — wait longer
           await sleep(6000, abort.signal);
           continue;
         }
-        if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status} בבדיקת מצב`);
+        if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status}`);
 
         consecutiveErrors = 0;
-        pollData = await pollRes.json();
+        pollData = pollRes.data;
         if (pollData?.data?.attributes?.status === 'completed') {
           finalData = pollData.data;
         }
@@ -1441,7 +1416,7 @@ async function startRealScan(file) {
     clearInterval(pollProgressInterval);
     pollProgressInterval = null;
 
-    if (!activeScans[id]) return; // cancelled
+    if (!activeScans[id]) return;
     if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן — נסה שוב מאוחר יותר');
 
     /* ── Step 4: Process results ─────────────────────────── */
@@ -1449,7 +1424,6 @@ async function startRealScan(file) {
     const stats   = attrs.stats || {};
     const results = attrs.results || {};
 
-    // Extract hash from multiple possible locations
     const hash = finalData?.meta?.file_info?.sha256
               || pollData?.data?.meta?.file_info?.sha256
               || null;
@@ -1480,7 +1454,6 @@ async function startRealScan(file) {
       saveScans();
       renderAll();
 
-      // Haptic feedback
       vibrate(targetStatus === 'safe' ? [40] : [80, 40, 80, 40, 120]);
 
       if (notifsEnabled) {
@@ -1494,7 +1467,7 @@ async function startRealScan(file) {
     }
 
   } catch (err) {
-    if (err.name === 'AbortError') return; // user cancelled, silently exit
+    if (err.name === 'AbortError') return;
     delete activeScans[id];
     scans = scans.filter(s => s.id !== id);
     saveScans();
@@ -1508,7 +1481,7 @@ async function startRealScan(file) {
     renderActiveSection();
   }
 }
-
+  
 function cancelScan(id) {
   const ctrl = activeScans[id];
   if (ctrl) ctrl.abort();
