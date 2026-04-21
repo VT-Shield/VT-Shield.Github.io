@@ -1242,30 +1242,39 @@ function processFile(file) {
 /* ═══════════════════════════════════════════════
    FETCH WITH CORS FALLBACK
 ═══════════════════════════════════════════════ */
-async function fetchVT(url, options) {
+async function fetchVT(url, options, isUpload = false) {
   let res;
   try {
     res = await fetch(url, options);
   } catch (err) {
     if (err.name === 'AbortError') throw err;
+    
+    // מניעת קריסת ה-JSON: אם נחסמנו בהעלאת קובץ (POST), לא שולחים דרך הפרוקסי (שרת חינמי לא עומד בזה ומחזיר שגיאת HTML שקורסת)
+    if (isUpload) {
+      throw new Error('העלאה נחסמה. נא לכבות חוסם פרסומות, VPN או מצב "גלישה פרטית" ולנסות שוב.');
+    }
+
     console.warn('בקשה ישירה נחסמה. מנסה פרוקסי...', url);
     try {
       const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
       res = await fetch(proxyUrl, options);
     } catch (pe) {
       if (pe.name === 'AbortError') throw pe;
-      throw new Error('שגיאת רשת מוחלטת - ייתכן שחוסם פרסומות חוסם את התקשורת.');
+      throw new Error('שגיאת רשת מוחלטת - הגישה לשרתי הסריקה נחסמה לחלוטין.');
     }
   }
 
-  // קריאה בטוחה כדי למנוע שגיאות JSON אם הפרוקסי מחזיר עמוד שגיאת HTML
+  // קריאה בטוחה כדי למנוע את שגיאת ה-JSON כשרשת/פרוקסי מסוננים מחזירים דף HTML
   const text = await res.text();
   let data = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch (e) {
-    if (res.status === 429) throw new Error('חרגת ממגבלת הבקשות של VirusTotal. המתן דקה ונסה שוב.');
-    throw new Error('שגיאת תקשורת עם השרת (התקבל נתון לא תקין).');
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      if (res.status === 429) throw new Error('חרגת ממגבלת הבקשות של VirusTotal. המתן קצת ונסה שוב.');
+      if (res.status >= 500) throw new Error(`שגיאת שרת מרוחק (${res.status}). נסה שוב מאוחר יותר.`);
+      throw new Error('התקבל נתון שגוי מהשרת (נראה שרשת הסינון או חוסם הפרסומות משבשים את התקשורת).');
+    }
   }
 
   return { ok: res.ok, status: res.status, data };
@@ -1339,12 +1348,13 @@ async function startRealScan(file) {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
+    // הגדרת isUpload=true כדי למנוע קריסות JSON בניסיון להעלות דרך פרוקסי
     const uploadRes = await fetchVT(uploadUrl, {
       method: 'POST',
       headers: { 'x-apikey': apiKey },
       body: formData,
       signal: abort.signal,
-    });
+    }, true);
 
     clearInterval(uploadProgressInterval);
     uploadProgressInterval = null;
