@@ -7,8 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="VT Shield"/>
+<meta name="application-name" content="VT Shield"/>
 <meta name="description" content="VT Shield — סורק קבצים מתקדם מבוסס VirusTotal API"/>
 <link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%236366f1'/><path d='M96 156s52-26 52-65V48L96 28 44 48v43c0 39 52 65 52 65z' fill='none' stroke='white' stroke-width='12' stroke-linejoin='round'/><path d='M78 97l12 12 24-24' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>"/>
 <title>VT Shield — סורק VirusTotal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -43,6 +46,7 @@
   --inp-bg: #ffffff;
   --inp-border: #e2e8f0;
 }
+
 /* ═══════════════ RESET ═══════════════ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;scrollbar-width:none}
 *::-webkit-scrollbar{display:none}
@@ -62,6 +66,8 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 @keyframes gradShift{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
 @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes dropPulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.4)}70%{box-shadow:0 0 0 12px rgba(99,102,241,0)}}
+@keyframes installSlideUp{from{transform:translateX(-50%) translateY(120%)}to{transform:translateX(-50%) translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* ═══════════════ LAYOUT ═══════════════ */
 .main-wrap{padding-top:var(--status-h)}
@@ -71,6 +77,9 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .status-bar{height:var(--status-h);display:flex;align-items:center;padding:0 20px;justify-content:space-between;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:60;background:var(--surface-solid);backdrop-filter:blur(48px);font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.04em}
 .status-icons{display:flex;gap:6px;align-items:center}
 .status-icons svg{width:14px;height:14px}
+.offline-pill{display:none;align-items:center;gap:5px;font-size:9px;font-weight:800;color:var(--rose);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.15);border-radius:99px;padding:2px 8px}
+.offline-pill.show{display:flex}
+.offline-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--rose)}
 
 /* ═══════════════ HEADER ═══════════════ */
 .header{background:var(--surface-solid);backdrop-filter:blur(48px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
@@ -82,9 +91,7 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .logo-text{font-size:17px;font-weight:900;letter-spacing:-.02em;color:var(--text)}
 .logo-status{display:flex;align-items:center;gap:6px;margin-top:2px}
 .status-indicator{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:statusDot 2s ease-in-out infinite}
-.status-indicator.off{background:#52525b;animation:none}
 .status-label{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(16,185,129,.7)}
-.status-label.off{color:var(--text3)}
 .notif-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:14px;cursor:pointer;transition:background .2s;position:relative;border:none;background:transparent;color:var(--text2)}
 .notif-btn:active{background:var(--surface)}
 .notif-btn svg{width:18px;height:18px}
@@ -208,7 +215,7 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 
 /* ═══════════════ PROGRESS BAR ═══════════════ */
 .prog-bar{height:6px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden;margin-top:10px}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--indigo),var(--violet),#a855f7);border-radius:99px;transition:width .3s ease}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--indigo),var(--violet),#a855f7);border-radius:99px;transition:width .6s ease}
 .prog-info{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 
 /* ═══════════════ CANCEL BUTTON ═══════════════ */
@@ -390,6 +397,81 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .empty-state-title{font-size:15px;font-weight:700;color:var(--text3)}
 .empty-state-sub{font-size:11px;margin-top:6px;line-height:1.5}
 
+/* ═══════════════ PWA INSTALL BANNER ═══════════════ */
+.install-banner{
+  position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;
+  transform:translateX(-50%) translateY(140%);
+  width:calc(100% - 32px);max-width:398px;z-index:38;
+  background:var(--surface-solid);backdrop-filter:blur(48px);
+  border:1px solid rgba(99,102,241,.25);border-radius:20px;
+  padding:14px 14px 14px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 40px rgba(99,102,241,.18),0 2px 12px rgba(0,0,0,.35);
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.install-banner.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
+.install-banner-icon{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(99,102,241,.35);
+}
+.install-banner-icon svg{width:22px;height:22px;color:#fff}
+.install-banner-text{flex:1;min-width:0}
+.install-banner-title{font-size:13px;font-weight:800;color:var(--text)}
+.install-banner-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.install-now-btn{
+  padding:8px 16px;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6);
+  border:none;border-radius:10px;color:#fff;
+  font-size:12px;font-weight:800;cursor:pointer;
+  font-family:'Heebo',sans-serif;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(99,102,241,.3);flex-shrink:0;
+  transition:opacity .2s;
+}
+.install-now-btn:active{opacity:.8}
+.install-dismiss-btn{
+  width:28px;height:28px;border:none;
+  background:rgba(255,255,255,.06);border-radius:8px;
+  color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* ═══════════════ iOS INSTALL SHEET ═══════════════ */
+.ios-install-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);z-index:75;opacity:0;pointer-events:none;transition:opacity .3s}
+.ios-install-overlay.show{opacity:1;pointer-events:auto}
+.ios-install-sheet{
+  position:fixed;bottom:0;left:50%;
+  transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;z-index:80;
+  background:var(--surface-solid);backdrop-filter:blur(48px);
+  border-radius:28px 28px 0 0;
+  border-top:1px solid var(--border);
+  padding:0 24px 40px;
+  transition:transform .38s cubic-bezier(.25,.46,.45,.94);
+}
+.ios-install-sheet.show{transform:translateX(-50%) translateY(0)}
+.ios-step{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.ios-step:last-of-type{border-bottom:none}
+.ios-step-num{width:26px;height:26px;border-radius:99px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0}
+.ios-step-icon{width:36px;height:36px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--indigo)}
+.ios-step-icon svg{width:18px;height:18px}
+.ios-step-text{font-size:13px;color:var(--text2);line-height:1.4}
+.ios-step-text strong{color:var(--text);font-weight:800}
+.ios-close-btn{width:100%;padding:14px;margin-top:20px;background:linear-gradient(90deg,#6366f1,#8b5cf6);border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;box-shadow:0 4px 20px rgba(99,102,241,.25)}
+
+/* ═══════════════ NETWORK STATUS ═══════════════ */
+.network-banner{
+  position:fixed;top:var(--status-h);left:50%;transform:translateX(-50%) translateY(-100%);
+  width:100%;max-width:430px;z-index:55;
+  background:rgba(239,68,68,.9);backdrop-filter:blur(24px);
+  padding:8px 20px;text-align:center;
+  font-size:12px;font-weight:800;color:#fff;
+  transition:transform .35s ease;
+}
+.network-banner.show{transform:translateX(-50%) translateY(0)}
+
 /* ═══════════════ LIGHT MODE ═══════════════ */
 .light .scan-card:hover{background:rgba(255,255,255,.85)}
 .light .toggle.off{background:rgba(0,0,0,.12)}
@@ -400,6 +482,9 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .light .notif-handle-bar,.light .modal-handle-bar{background:rgba(0,0,0,.1)}
 .light .toast-msg{color:var(--text)}
 .light .modal-close-btn{color:var(--text2)}
+.light .install-banner{border-color:rgba(99,102,241,.2)}
+.light .filter-btn.off{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.06)}
+.light .h-stat-total{background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.06)}
 
 /* ═══════════════ SCANNING RINGS ═══════════════ */
 .scanning .ring{animation-duration:1.6s}
@@ -414,12 +499,18 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
   <div class="bg-blob bg-blob-2"></div>
 </div>
 
+<!-- NETWORK STATUS BANNER -->
+<div class="network-banner" id="networkBanner">⚠️ אין חיבור לאינטרנט — הסריקה דורשת רשת</div>
+
 <div class="status-bar">
   <div class="time-display" id="statusTime">12:00</div>
-  <div class="status-icons">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="offline-pill" id="offlinePill">אופליין</div>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>
+    </div>
   </div>
 </div>
 
@@ -467,14 +558,12 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
               </svg>
             </div>
           </div>
-
           <div class="status-pill" id="heroPill">
             <div class="status-pill-dot"></div>
             <span class="status-pill-text" id="heroPillText">ההגנה פעילה</span>
           </div>
           <div class="hero-title" id="heroTitle">המכשיר מוגן</div>
           <div class="hero-sub">כל העלאה נסרקת אוטומטית ע״י ה-API של VirusTotal עם 70+ מנועים</div>
-
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -495,7 +584,6 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
         </div>
       </div>
 
-      <!-- UPLOAD BUTTON (also drop zone) -->
       <div class="actions-wrap">
         <button class="action-btn" id="uploadArea"
           onclick="document.getElementById('fileInput').click()"
@@ -519,7 +607,6 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
         </button>
       </div>
 
-      <!-- ACTIVE SCANS -->
       <div id="activeScansSection" style="display:none;margin-bottom:20px">
         <div class="section-header">
           <div class="section-title"><div class="dot"></div> סריקות פעילות</div>
@@ -527,7 +614,6 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
         <div id="activeScansList"></div>
       </div>
 
-      <!-- RECENT -->
       <div class="section-header">
         <div class="section-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -585,7 +671,25 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
         <button class="save-btn" onclick="saveApiKey()">שמור מפתח</button>
         <div style="display:flex;align-items:flex-start;gap:8px;margin-top:10px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-top:2px;flex-shrink:0;color:rgba(99,102,241,.6)"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          <p style="font-size:11px;color:var(--text3);line-height:1.5">ניתן לקבל מפתח חינמי מכאן: <a href="https://www.virustotal.com/gui/my-apikey" target="_blank" rel="noopener" style="font-weight:800;color:var(--indigo);text-decoration:none">virustotal.com/gui/my-apikey</a></p>
+          <p style="font-size:11px;color:var(--text3);line-height:1.5">ניתן לקבל מפתח חינמי: <a href="https://www.virustotal.com/gui/my-apikey" target="_blank" rel="noopener" style="font-weight:800;color:var(--indigo);text-decoration:none">virustotal.com/gui/my-apikey</a></p>
+        </div>
+      </div>
+
+      <!-- PWA Install in Settings -->
+      <div class="settings-section" id="installSection" style="display:none">
+        <div class="settings-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          התקנת אפליקציה
+        </div>
+        <div class="settings-item" style="border-bottom:none;padding-bottom:0">
+          <div class="settings-icon" style="background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--indigo)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="settings-label">
+            <div class="settings-label-main">הוסף למסך הבית</div>
+            <div class="settings-label-sub">חוויה מלאה כאפליקציה נייטיב</div>
+          </div>
+          <button onclick="installApp()" style="padding:8px 14px;background:linear-gradient(90deg,var(--indigo),var(--violet));border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;white-space:nowrap">התקן</button>
         </div>
       </div>
 
@@ -636,7 +740,7 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
       <div class="about-wrap">
         <div class="about-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="about-name">VT Shield</div>
-        <div class="about-ver">v4.0.0 · Powered by VirusTotal API v3</div>
+        <div class="about-ver">v4.1.0 · Powered by VirusTotal API v3</div>
         <div class="about-desc">ממשק מתקדם המבוסס צד-לקוח לבדיקת כל סוגי הקבצים דרך 70+ מנועי אנטי-וירוס בזמן אמת.</div>
       </div>
     </div>
@@ -689,6 +793,56 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
   </div>
 </div>
 
+<!-- PWA INSTALL BANNER -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  </div>
+  <div class="install-banner-text">
+    <div class="install-banner-title">התקן את VT Shield</div>
+    <div class="install-banner-sub">הוסף למסך הבית לחוויה מלאה</div>
+  </div>
+  <button class="install-now-btn" onclick="installApp()">התקן</button>
+  <button class="install-dismiss-btn" onclick="dismissInstall()" title="סגור">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- iOS INSTALL SHEET -->
+<div class="ios-install-overlay" id="iosInstallOverlay" onclick="closeIOSInstall()"></div>
+<div class="ios-install-sheet" id="iosInstallSheet">
+  <div class="modal-handle" style="padding-top:16px"><div class="modal-handle-bar"></div></div>
+  <div style="text-align:center;padding:8px 0 20px">
+    <div style="width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 8px 24px rgba(99,102,241,.3)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width:28px;height:28px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div style="font-size:17px;font-weight:900;color:var(--text)">הוספת VT Shield למסך הבית</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">עקוב אחרי השלבים הבאים ב-Safari</div>
+  </div>
+  <div class="ios-step">
+    <div class="ios-step-num">1</div>
+    <div class="ios-step-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </div>
+    <div class="ios-step-text">לחץ על כפתור <strong>שתף</strong> <span style="font-size:16px">⬆️</span> בתחתית Safari</div>
+  </div>
+  <div class="ios-step">
+    <div class="ios-step-num">2</div>
+    <div class="ios-step-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="17" x2="20" y2="17"/><line x1="17" y1="14" x2="17" y2="20"/></svg>
+    </div>
+    <div class="ios-step-text">גלול למטה ובחר <strong>"הוסף למסך הבית"</strong></div>
+  </div>
+  <div class="ios-step">
+    <div class="ios-step-num">3</div>
+    <div class="ios-step-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="ios-step-text">לחץ <strong>"הוסף"</strong> בפינה הימנית העליונה — זהו!</div>
+  </div>
+  <button class="ios-close-btn" onclick="closeIOSInstall();dismissInstall()">הבנתי ✓</button>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast">
   <div class="toast-icon" id="toastIcon">
@@ -707,21 +861,47 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
    STATE
 ═══════════════════════════════════════════════ */
 let scans = [];
-let activeScans = {}; // id → AbortController
+let activeScans = {};         // id → AbortController
 let currentFilter = 'all';
 let notifsEnabled = true;
 let darkMode = true;
+let deferredPrompt = null;    // PWA install prompt
+
 const LARGE_FILE_THRESHOLD = 32 * 1024 * 1024; // 32 MB
+
+/* ─── Device detection ─── */
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+const isInStandalone = window.matchMedia('(display-mode: standalone)').matches
+                       || window.navigator.standalone === true;
+const isMobile = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+
+/* ─── CORS proxy fallback list ─── */
+const PROXY_LIST = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
 
 /* ═══════════════════════════════════════════════
    HELPERS
 ═══════════════════════════════════════════════ */
-/** HTML-escape a string to prevent injection */
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+/**
+ * Abort-aware sleep: rejects immediately if signal is already aborted,
+ * or when the signal fires during the wait.
+ */
+function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal && signal.aborted) { reject(new DOMException('Aborted','AbortError')); return; }
+    const timer = setTimeout(resolve, ms);
+    if (signal) {
+      const onAbort = () => { clearTimeout(timer); reject(new DOMException('Aborted','AbortError')); };
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
+  });
+}
 
 function ago(ts) {
   const m = Math.floor((Date.now()-ts)/60000);
@@ -739,12 +919,14 @@ function fmtSize(bytes) {
   return `${bytes} B`;
 }
 
-function getExt(name) {
-  return (name || '').split('.').pop().toLowerCase();
+function getExt(name) { return (name || '').split('.').pop().toLowerCase(); }
+
+function vibrate(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
 }
 
 /* ═══════════════════════════════════════════════
-   FILE ICON SYSTEM (comprehensive)
+   FILE ICON SYSTEM
 ═══════════════════════════════════════════════ */
 function fileIconClass(name) {
   const e = getExt(name);
@@ -757,36 +939,37 @@ function fileIconClass(name) {
   if (['doc','docx','odt','rtf','wpd'].includes(e)) return 'fi-doc';
   if (['xls','xlsx','xlsm','csv','ods','numbers'].includes(e)) return 'fi-xls';
   if (['ppt','pptx','pps','ppsx','odp','key'].includes(e)) return 'fi-ppt';
-  if (['zip','rar','7z','tar','gz','bz2','xz','cab','lz','lzma','tgz','tbz2','z','zst','iso','img','nrg'].includes(e)) return 'fi-zip';
+  if (['zip','rar','7z','tar','gz','bz2','xz','cab','lz','lzma','tgz','tbz2','z','zst'].includes(e)) return 'fi-zip';
+  if (['iso','img','nrg'].includes(e)) return 'fi-iso';
   if (['mp3','wav','ogg','flac','aac','m4a','wma','opus','aiff','au','mid','midi'].includes(e)) return 'fi-audio';
   if (['mp4','mov','avi','mkv','webm','wmv','flv','m4v','3gp','ts','mpeg','mpg','vob','rm','rmvb','ogv'].includes(e)) return 'fi-video';
-  if (['js','ts','jsx','tsx','py','java','cpp','c','h','cs','go','rb','php','html','htm','css','scss','sass','less','json','xml','yaml','yml','sql','r','swift','kt','rs','scala','lua','dart','sh','bash','pl','ex','exs','clj','hs','fs','vb','asp','aspx','jsp','toml','tf','vue','svelte'].includes(e)) return 'fi-code';
+  if (['js','ts','jsx','tsx','py','java','cpp','c','h','cs','go','rb','php','html','htm','css','scss','sass','less','json','xml','yaml','yml','sql','r','swift','kt','rs','scala','lua','dart','pl','ex','exs','clj','hs','fs','vb','asp','aspx','jsp','toml','tf','vue','svelte'].includes(e)) return 'fi-code';
   if (['txt','md','markdown','log','ini','cfg','conf','env','htaccess','properties'].includes(e)) return 'fi-txt';
   return 'fi-default';
 }
 
 const FILE_ICONS = {
-  pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-  img: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
-  exe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h.01M15 15h.01M9 12h6"/></svg>',
-  script: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
-  apk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
-  mac: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 0 0-9-9z"/><path d="M12 7a5 5 0 0 0 0 10V7z"/></svg>',
-  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
-  xls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
-  ppt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-  zip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 10v6M9 13h6"/></svg>',
-  audio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-  video: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
-  code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-  txt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-  default: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  img:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  exe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h.01M15 15h.01M9 12h6"/></svg>',
+  script:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+  apk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+  mac:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 0 0-9-9z"/><path d="M12 7a5 5 0 0 0 0 10V7z"/></svg>',
+  doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  xls:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
+  ppt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+  zip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 10v6M9 13h6"/></svg>',
+  iso:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+  audio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+  code:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+  txt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  default:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
 };
 
 function fileIconSVG(name) {
-  const cls = fileIconClass(name);
-  const key = cls.replace('fi-','');
-  return FILE_ICONS[key] || FILE_ICONS.default;
+  const cls = fileIconClass(name).replace('fi-','');
+  return FILE_ICONS[cls] || FILE_ICONS.default;
 }
 
 function statusColor(s) {
@@ -809,6 +992,7 @@ function getStats() {
    INIT
 ═══════════════════════════════════════════════ */
 function init() {
+  // Load saved settings
   const savedKey = localStorage.getItem('vts_key');
   if (savedKey) document.getElementById('apiKeyInp').value = savedKey;
 
@@ -818,10 +1002,10 @@ function init() {
   const savedNotifs = localStorage.getItem('vts_notifs');
   if (savedNotifs !== null) notifsEnabled = savedNotifs === 'true';
 
+  // Load scan history, clear any stale "scanning" states
   try {
     const saved = localStorage.getItem('vts_scans');
     scans = saved ? JSON.parse(saved) : [];
-    // Remove any lingering "scanning" state from previous sessions
     scans = scans.filter(s => s.status !== 'scanning');
   } catch { scans = []; }
 
@@ -831,10 +1015,124 @@ function init() {
   setInterval(updateStatusTime, 30000);
   renderAll();
   updateNotifPermBtn();
+  setupNetworkMonitor();
+  setupPWAInstall();
+  registerSW();
 }
 
 function saveScans() {
   try { localStorage.setItem('vts_scans', JSON.stringify(scans)); } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════
+   SERVICE WORKER
+═══════════════════════════════════════════════ */
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    // Listen for shared files from the SW share_target
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'SHARE_TARGET') {
+        const { name, size, fileType, buffer } = e.data;
+        try {
+          const file = new File([buffer], name, { type: fileType || 'application/octet-stream' });
+          // Small delay so the app is fully visible
+          setTimeout(() => processFile(file), 600);
+        } catch(err) { /* ignore */ }
+      }
+    });
+  }).catch(() => {});
+}
+
+/* ═══════════════════════════════════════════════
+   NETWORK MONITOR
+═══════════════════════════════════════════════ */
+function setupNetworkMonitor() {
+  const banner  = document.getElementById('networkBanner');
+  const pill    = document.getElementById('offlinePill');
+  const update  = () => {
+    const offline = !navigator.onLine;
+    banner.classList.toggle('show', offline);
+    pill.classList.toggle('show', offline);
+    if (!offline) setTimeout(() => banner.classList.remove('show'), 3000);
+  };
+  window.addEventListener('online',  update);
+  window.addEventListener('offline', update);
+  update();
+}
+
+/* ═══════════════════════════════════════════════
+   PWA INSTALL PROMPT
+═══════════════════════════════════════════════ */
+function setupPWAInstall() {
+  if (isInStandalone) return; // already installed
+
+  const dismissed = localStorage.getItem('vts_install_dismissed') === '1';
+
+  // Android / Chrome: capture beforeinstallprompt
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show settings section
+    document.getElementById('installSection').style.display = 'block';
+    if (!dismissed) {
+      setTimeout(showInstallBanner, 2500);
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    hideInstallBanner();
+    document.getElementById('installSection').style.display = 'none';
+    showToast('VT Shield הותקנה בהצלחה! 🎉', 'success');
+    vibrate([50, 30, 80]);
+  });
+
+  // iOS Safari: show install hint
+  if (isIOS && !dismissed) {
+    document.getElementById('installSection').style.display = 'block';
+    // Update banner text for iOS
+    document.querySelector('.install-banner-sub').textContent = 'לחץ ⬆️ שתף → הוסף למסך הבית';
+    setTimeout(showInstallBanner, 3000);
+  }
+}
+
+function showInstallBanner() {
+  if (isInStandalone) return;
+  document.getElementById('installBanner').classList.add('show');
+}
+
+function hideInstallBanner() {
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+function dismissInstall() {
+  localStorage.setItem('vts_install_dismissed', '1');
+  hideInstallBanner();
+}
+
+function installApp() {
+  if (isIOS) {
+    showIOSInstall();
+  } else if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      deferredPrompt = null;
+      hideInstallBanner();
+    });
+  } else {
+    showToast('פתח בדפדפן Chrome/Safari כדי להתקין', 'info');
+  }
+}
+
+function showIOSInstall() {
+  document.getElementById('iosInstallOverlay').classList.add('show');
+  document.getElementById('iosInstallSheet').classList.add('show');
+}
+
+function closeIOSInstall() {
+  document.getElementById('iosInstallOverlay').classList.remove('show');
+  document.getElementById('iosInstallSheet').classList.remove('show');
 }
 
 /* ═══════════════════════════════════════════════
@@ -850,13 +1148,11 @@ function applyTheme() {
   const dt = document.getElementById('toggleDark');
   if (darkMode) {
     di.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-    dl.textContent = 'מצב כהה';
-    ds.textContent = 'עבור למצב בהיר';
+    dl.textContent = 'מצב כהה'; ds.textContent = 'עבור למצב בהיר';
     dt.classList.add('on'); dt.classList.remove('off');
   } else {
     di.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-    dl.textContent = 'מצב בהיר';
-    ds.textContent = 'עבור למצב כהה';
+    dl.textContent = 'מצב בהיר'; ds.textContent = 'עבור למצב כהה';
     dt.classList.remove('on'); dt.classList.add('off');
   }
 }
@@ -903,6 +1199,7 @@ function updateNotifPermBtn() {
   if (!('Notification' in window) || Notification.permission === 'granted') btn.style.display = 'none';
 }
 function sendBrowserNotif(filename, status, detections, totalEngines) {
+  if (!notifsEnabled) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const icons = {safe:'✅',suspicious:'⚠️',malicious:'🚨'};
   const bodies = {
@@ -913,7 +1210,7 @@ function sendBrowserNotif(filename, status, detections, totalEngines) {
   try {
     new Notification(`${icons[status]||'📋'} ${filename} — ${statusLabel(status)}`, {
       body: bodies[status] || '',
-      tag: filename,
+      tag: filename + '_vts',
       silent: status === 'safe',
     });
   } catch(e) {}
@@ -924,11 +1221,11 @@ function sendBrowserNotif(filename, status, detections, totalEngines) {
 ═══════════════════════════════════════════════ */
 function saveApiKey() {
   const key = document.getElementById('apiKeyInp').value.trim();
-  if (key.length > 10) {
+  if (key.length >= 32) {
     localStorage.setItem('vts_key', key);
     showToast('מפתח API נשמר ✓', 'success');
   } else {
-    showToast('מפתח לא תקין — חייב להיות ארוך מ-10 תווים', 'error');
+    showToast('מפתח לא תקין — מפתח VT הוא 64 תווים', 'error');
   }
 }
 function toggleApiVis() {
@@ -947,8 +1244,7 @@ function toggleApiVis() {
    FILE UPLOAD — DRAG & DROP
 ═══════════════════════════════════════════════ */
 function handleDragOver(e) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   document.getElementById('uploadInner').classList.add('drag-over');
 }
 function handleDragLeave(e) {
@@ -956,21 +1252,44 @@ function handleDragLeave(e) {
   document.getElementById('uploadInner').classList.remove('drag-over');
 }
 function handleDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   document.getElementById('uploadInner').classList.remove('drag-over');
-  const files = Array.from(e.dataTransfer.files);
-  files.forEach(f => processFile(f));
+  Array.from(e.dataTransfer.files).forEach(f => processFile(f));
 }
 function handleFileSelect(e) {
-  const files = Array.from(e.target.files);
-  files.forEach(f => processFile(f));
+  Array.from(e.target.files).forEach(f => processFile(f));
   e.target.value = '';
 }
 
 function processFile(file) {
-  // No hard size limit — large files use upload_url
+  if (!file || !file.name) return;
+  vibrate([30]);
   startRealScan(file);
+}
+
+/* ═══════════════════════════════════════════════
+   FETCH WITH CORS FALLBACK
+═══════════════════════════════════════════════ */
+async function fetchVT(url, options) {
+  // Try direct first
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    // If CORS/network error, try proxies (GET only — FormData not proxiable)
+    if (options && options.method === 'POST') throw err;
+    for (const makeProxy of PROXY_LIST) {
+      try {
+        const proxyUrl = makeProxy(url);
+        const res = await fetch(proxyUrl, { ...options, body: undefined, method: 'GET' });
+        if (res.ok) return res;
+      } catch(pe) {
+        if (pe.name === 'AbortError') throw pe;
+      }
+    }
+    throw err;
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -978,9 +1297,13 @@ function processFile(file) {
 ═══════════════════════════════════════════════ */
 async function startRealScan(file) {
   const apiKey = localStorage.getItem('vts_key');
-  if (!apiKey || apiKey.length < 10) {
+  if (!apiKey || apiKey.length < 32) {
     showToast('נדרש מפתח API של VirusTotal', 'error');
     switchTab('settings');
+    return;
+  }
+  if (!navigator.onLine) {
+    showToast('אין חיבור לאינטרנט', 'error');
     return;
   }
 
@@ -988,12 +1311,11 @@ async function startRealScan(file) {
   const sz = fmtSize(file.size);
   const isLarge = file.size > LARGE_FILE_THRESHOLD;
 
-  // Create scan placeholder
   const scan = {
     id, filename: file.name, size: sz,
     status: 'scanning', detections: 0, totalEngines: 0,
     timestamp: Date.now(), hash: null,
-    progress: 0, verdict: isLarge ? 'מקבל URL להעלאה...' : 'מעלה קובץ...',
+    progress: 0, verdict: isLarge ? 'מקבל URL להעלאה...' : 'מכין העלאה...',
     source: 'העלאה', realThreats: [],
   };
   scans.unshift(scan);
@@ -1003,123 +1325,140 @@ async function startRealScan(file) {
   renderAll();
   updateHeaderDot();
 
-  let progressInterval = null;
-
-  // פונקציית עזר לביצוע בקשות עם מנגנון עקיפת חסימות אוטומטי
-  const fetchVT = async (url, options) => {
-    try {
-      return await fetch(url, options);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      console.warn('בקשה ישירה נכשלה עקב חסימת CORS או תוסף פרטיות. עובר לפרוקסי...', err);
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-      return await fetch(proxyUrl, options);
-    }
-  };
+  let uploadProgressInterval = null;
+  let pollProgressInterval   = null;
 
   try {
-    // ── Step 1: Get upload URL for large files ──────────────────
+    /* ── Step 1: Upload URL for large files ──────────────── */
     let uploadUrl = 'https://www.virustotal.com/api/v3/files';
     if (isLarge) {
       updateScanVerdict(id, 'מקבל URL להעלאה...');
-      const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
+      const urlRes = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
         headers: { 'x-apikey': apiKey },
         signal: abort.signal,
       });
       if (!urlRes.ok) {
-        if (urlRes.status === 401) throw new Error('מפתח API שגוי');
-        if (urlRes.status === 403) throw new Error('מפתח API אינו תומך בקבצים גדולים. מקסימום: 32 MB');
-        throw new Error(`שגיאה בקבלת URL (${urlRes.status})`);
+        if (urlRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
+        if (urlRes.status === 403) throw new Error('מפתח זה אינו תומך בקבצים גדולים (מקסימום 32 MB)');
+        if (urlRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
+        throw new Error(`שגיאה בקבלת URL להעלאה (HTTP ${urlRes.status})`);
       }
       const urlData = await urlRes.json();
       uploadUrl = urlData.data;
+      if (!uploadUrl) throw new Error('תשובת API לא תקינה לקבלת URL');
     }
 
-    // ── Step 2: Upload file ─────────────────────────────────────
+    /* ── Step 2: Upload file (0 → 85%) ──────────────────── */
     updateScanVerdict(id, 'מעלה קובץ...');
-    // Animate progress during upload (0→85%)
-    let prog = 5;
-    progressInterval = setInterval(() => {
-      prog = Math.min(prog + (isLarge ? 0.5 : 2), 85);
-      updateActiveScan(id, prog);
-    }, isLarge ? 3000 : 1000);
+    let uploadProg = 3;
+    const step = isLarge ? 0.4 : 3;
+    const interval = isLarge ? 4000 : 800;
+    uploadProgressInterval = setInterval(() => {
+      uploadProg = Math.min(uploadProg + step, 82);
+      updateActiveScan(id, uploadProg);
+    }, interval);
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name);
 
-    const uploadRes = await fetchVT(uploadUrl, {
+    const uploadRes = await fetch(uploadUrl, {
       method: 'POST',
       headers: { 'x-apikey': apiKey },
       body: formData,
       signal: abort.signal,
     });
 
-    clearInterval(progressInterval);
-    progressInterval = null;
+    clearInterval(uploadProgressInterval);
+    uploadProgressInterval = null;
+    updateActiveScan(id, 86);
 
     if (!uploadRes.ok) {
-      if (uploadRes.status === 401) throw new Error('מפתח API שגוי');
-      if (uploadRes.status === 413) throw new Error(`הקובץ גדול מדי (${sz})`);
-      if (uploadRes.status === 429) throw new Error('חרגת ממגבלת ה-API. נסה שוב בעוד דקה.');
+      if (uploadRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
+      if (uploadRes.status === 413) throw new Error(`הקובץ גדול מדי: ${sz}`);
+      if (uploadRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
+      if (uploadRes.status === 400) throw new Error('קובץ לא תקין או פגום');
       throw new Error(`שגיאה בהעלאה (HTTP ${uploadRes.status})`);
     }
 
     const uploadData = await uploadRes.json();
-    const analysisId = uploadData.data.id;
-    if (!analysisId) throw new Error('תשובת API לא תקינה — חסר מזהה ניתוח');
+    const analysisId = uploadData?.data?.id;
+    if (!analysisId) throw new Error('תשובת VT API לא תקינה — אין מזהה ניתוח');
 
-    // ── Step 3: Poll for results ────────────────────────────────
-    updateScanVerdict(id, 'מנתח...');
-    updateActiveScan(id, 88);
+    /* ── Step 3: Poll for results (86 → 97%) ────────────── */
+    updateScanVerdict(id, 'ממתין לניתוח...');
+    updateActiveScan(id, 86);
+
+    // Slow progress animation during polling so it never looks stuck
+    let pollProg = 86;
+    pollProgressInterval = setInterval(() => {
+      if (!activeScans[id]) { clearInterval(pollProgressInterval); return; }
+      pollProg = Math.min(pollProg + 0.25, 97);
+      updateActiveScan(id, pollProg);
+    }, 1500);
 
     let finalData = null;
+    let pollData  = null;
     let pollCount = 0;
-    const MAX_POLLS = 90; // 90 × 4s = 6 minutes max
+    const MAX_POLLS = 90; // 90 × 4 s = 6 min max
     let consecutiveErrors = 0;
+    const pollMessages = ['ממתין לניתוח...', 'מנתח...', 'בודק מנועים...', 'כמעט מוכן...'];
 
     while (!finalData && activeScans[id] && pollCount < MAX_POLLS) {
-      await sleep(4000);
-      if (!activeScans[id]) break; // cancelled while sleeping
-
+      await sleep(4000, abort.signal);
+      if (!activeScans[id]) break;
       pollCount++;
+      updateScanVerdict(id, pollMessages[Math.min(Math.floor(pollCount / 5), pollMessages.length - 1)]);
+
       try {
         const pollRes = await fetchVT(
           `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
           { headers: { 'x-apikey': apiKey }, signal: abort.signal }
         );
-
         if (pollRes.status === 429) {
-          await sleep(15000); // extra wait on rate limit
+          await sleep(16000, abort.signal);
+          continue;
+        }
+        if (pollRes.status === 404) {
+          // Analysis not yet indexed — wait longer
+          await sleep(6000, abort.signal);
           continue;
         }
         if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status} בבדיקת מצב`);
 
         consecutiveErrors = 0;
-        const pollData = await pollRes.json();
-        if (pollData.data.attributes.status === 'completed') {
+        pollData = await pollRes.json();
+        if (pollData?.data?.attributes?.status === 'completed') {
           finalData = pollData.data;
         }
       } catch (pollErr) {
-        if (pollErr.name === 'AbortError') return;
+        if (pollErr.name === 'AbortError') throw pollErr;
         consecutiveErrors++;
-        if (consecutiveErrors >= 4) throw new Error('אובד קשר עם שרתי VirusTotal');
-        await sleep(3000);
+        if (consecutiveErrors >= 5) throw new Error('אובד קשר עם שרתי VirusTotal — בדוק חיבור');
+        await sleep(4000, abort.signal);
       }
     }
 
+    clearInterval(pollProgressInterval);
+    pollProgressInterval = null;
+
     if (!activeScans[id]) return; // cancelled
-    if (!finalData) throw new Error('הסריקה לקחה זמן רב מדי — נסה שוב מאוחר יותר');
+    if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן — נסה שוב מאוחר יותר');
 
-    // ── Step 4: Process results ─────────────────────────────────
-    const attrs = finalData.attributes;
-    const stats = attrs.stats;
+    /* ── Step 4: Process results ─────────────────────────── */
+    const attrs   = finalData.attributes || {};
+    const stats   = attrs.stats || {};
     const results = attrs.results || {};
-    const hash = finalData?.meta?.file_info?.sha256
-                 || finalData?.meta?.sha256
-                 || null;
 
-    const detections = (stats.malicious || 0) + (stats.suspicious || 0);
-    const totalEngines = Object.keys(results).length || stats.harmless + stats.malicious + stats.suspicious + stats.undetected || 1;
+    // Extract hash from multiple possible locations
+    const hash = finalData?.meta?.file_info?.sha256
+              || pollData?.data?.meta?.file_info?.sha256
+              || null;
+
+    const detections   = (stats.malicious || 0) + (stats.suspicious || 0);
+    const totalEngines = Object.keys(results).length
+      || ((stats.harmless||0) + (stats.malicious||0) + (stats.suspicious||0)
+          + (stats.undetected||0) + (stats.timeout||0) + (stats.confirmed_timeout||0))
+      || 1;
 
     let targetStatus = 'safe';
     if (stats.malicious > 0) targetStatus = 'malicious';
@@ -1127,7 +1466,8 @@ async function startRealScan(file) {
 
     const realThreats = Object.entries(results)
       .filter(([,v]) => v.category === 'malicious' || v.category === 'suspicious')
-      .map(([engine, v]) => ({ engine, threat: v.result || 'איום זוהה' }));
+      .map(([engine, v]) => ({ engine, threat: v.result || 'איום זוהה' }))
+      .sort((a, b) => a.engine.localeCompare(b.engine));
 
     const verdict = targetStatus === 'safe' ? 'קובץ בטוח'
                   : targetStatus === 'malicious' ? 'קובץ מסוכן' : 'קובץ חשוד';
@@ -1135,9 +1475,14 @@ async function startRealScan(file) {
     delete activeScans[id];
     const fidx = scans.findIndex(s => s.id === id);
     if (fidx >= 0) {
-      scans[fidx] = { ...scans[fidx], status: targetStatus, detections, totalEngines, progress: 100, verdict, hash, realThreats };
+      scans[fidx] = { ...scans[fidx], status: targetStatus, detections, totalEngines,
+                      progress: 100, verdict, hash, realThreats };
       saveScans();
       renderAll();
+
+      // Haptic feedback
+      vibrate(targetStatus === 'safe' ? [40] : [80, 40, 80, 40, 120]);
+
       if (notifsEnabled) {
         showToast(
           targetStatus === 'safe' ? `✓ ${file.name} — בטוח` : `⚠ ${file.name} — ${verdict}`,
@@ -1145,18 +1490,20 @@ async function startRealScan(file) {
         );
         sendBrowserNotif(file.name, targetStatus, detections, totalEngines);
       }
-      setTimeout(() => openModal(id), 400);
+      setTimeout(() => openModal(id), 420);
     }
 
   } catch (err) {
-    if (err.name === 'AbortError') return;
+    if (err.name === 'AbortError') return; // user cancelled, silently exit
     delete activeScans[id];
     scans = scans.filter(s => s.id !== id);
     saveScans();
     renderAll();
     showToast(err.message || 'שגיאת רשת — בדוק חיבור', 'error');
+    vibrate([100, 50, 100]);
   } finally {
-    if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+    if (uploadProgressInterval) { clearInterval(uploadProgressInterval); uploadProgressInterval = null; }
+    if (pollProgressInterval)   { clearInterval(pollProgressInterval);   pollProgressInterval   = null; }
     updateHeaderDot();
     renderActiveSection();
   }
@@ -1177,6 +1524,14 @@ function cancelScan(id) {
 function updateScanVerdict(id, text) {
   const fidx = scans.findIndex(s => s.id === id);
   if (fidx >= 0) scans[fidx].verdict = text;
+  // Also update DOM directly for speed
+  const metaEl = document.querySelector(`#asc-${id} .file-meta`);
+  if (metaEl) {
+    const parts = metaEl.textContent.split('·');
+    if (parts.length >= 2) {
+      metaEl.childNodes[0].textContent = parts[0];
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1197,6 +1552,7 @@ function updateHeaderDot() {
   const badge = document.getElementById('notifBadge');
   badge.textContent = count;
   badge.classList.toggle('show', count > 0);
+
   const heroPill = document.getElementById('heroPill');
   const heroPillText = document.getElementById('heroPillText');
   const heroTitle = document.getElementById('heroTitle');
@@ -1213,8 +1569,8 @@ function updateHeaderDot() {
 
 function updateHeroShield() {
   const activeCount = Object.keys(activeScans).length;
-  const box = document.getElementById('shieldBox');
-  const icon = document.getElementById('shieldIcon');
+  const box   = document.getElementById('shieldBox');
+  const icon  = document.getElementById('shieldIcon');
   const orbit = document.getElementById('orbitDot');
   const rings = document.getElementById('shieldRings');
   orbit.classList.toggle('show', activeCount > 0);
@@ -1230,17 +1586,17 @@ function updateHeroShield() {
 
 function updateStats() {
   const s = getStats();
-  document.getElementById('statTotal').textContent = s.total;
+  document.getElementById('statTotal').textContent   = s.total;
   document.getElementById('statThreats').textContent = s.threats;
-  document.getElementById('hStatTotal').textContent = s.total;
-  document.getElementById('hStatSafe').textContent = s.safe;
-  document.getElementById('hStatThreats').textContent = s.threats;
+  document.getElementById('hStatTotal').textContent  = s.total;
+  document.getElementById('hStatSafe').textContent   = s.safe;
+  document.getElementById('hStatThreats').textContent= s.threats;
 }
 
 function renderActiveSection() {
   const section = document.getElementById('activeScansSection');
-  const list = document.getElementById('activeScansList');
-  const active = scans.filter(s => s.status === 'scanning');
+  const list    = document.getElementById('activeScansList');
+  const active  = scans.filter(s => s.status === 'scanning');
   section.style.display = active.length ? 'block' : 'none';
   list.innerHTML = active.map(s => `
     <div class="scan-card active-scan" id="asc-${s.id}">
@@ -1251,29 +1607,31 @@ function renderActiveSection() {
         <div class="file-meta">${esc(s.size)} · ${esc(s.verdict)}</div>
         <div class="prog-bar"><div class="prog-fill" id="pf-${s.id}" style="width:${s.progress}%"></div></div>
         <div class="prog-info">
-          <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)">${esc(s.verdict)}</span>
+          <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)" id="pvt-${s.id}">${esc(s.verdict)}</span>
           <button class="cancel-btn" onclick="cancelScan('${s.id}')">בטל ✕</button>
         </div>
       </div>
       <div class="file-status">
-        <div class="file-det scanning" id="ppct-${s.id}">${s.progress}%</div>
+        <div class="file-det scanning" id="ppct-${s.id}">${Math.round(s.progress)}%</div>
       </div>
     </div>
   `).join('');
 }
 
 function updateActiveScan(id, prog) {
-  const pf = document.getElementById(`pf-${id}`);
+  const rounded = Math.round(prog);
+  // Update DOM directly without full re-render
+  const pf   = document.getElementById(`pf-${id}`);
   const ppct = document.getElementById(`ppct-${id}`);
-  if (pf) pf.style.width = prog + '%';
-  if (ppct) ppct.textContent = Math.round(prog) + '%';
+  const npf  = document.getElementById(`npf-${id}`);
+  const npct = document.getElementById(`npct-${id}`);
+  if (pf)   pf.style.width   = prog + '%';
+  if (ppct) ppct.textContent = rounded + '%';
+  if (npf)  npf.style.width  = prog + '%';
+  if (npct) npct.textContent = rounded + '%';
+  // Update state
   const fidx = scans.findIndex(s => s.id === id);
   if (fidx >= 0) scans[fidx].progress = prog;
-  // Update notif panel if open
-  const npf = document.getElementById(`npf-${id}`);
-  const npct = document.getElementById(`npct-${id}`);
-  if (npf) npf.style.width = prog + '%';
-  if (npct) npct.textContent = Math.round(prog) + '%';
 }
 
 function renderRecent() {
@@ -1305,10 +1663,11 @@ function renderRecent() {
 function renderHistory() {
   const q = (document.getElementById('searchInp') || {value:''}).value.toLowerCase().trim();
   let list = scans.filter(s => s.status !== 'scanning');
-  if (currentFilter === 'safe') list = list.filter(s => s.status === 'safe');
+  if (currentFilter === 'safe')    list = list.filter(s => s.status === 'safe');
   if (currentFilter === 'threats') list = list.filter(s => s.status !== 'safe');
   if (q) list = list.filter(s => s.filename.toLowerCase().includes(q));
   list.sort((a, b) => b.timestamp - a.timestamp);
+
   const el = document.getElementById('historyList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-state">
@@ -1339,7 +1698,8 @@ function renderHistory() {
 function setFilter(f) {
   currentFilter = f;
   ['all','safe','threats'].forEach(x => {
-    const btn = document.getElementById('f' + x.charAt(0).toUpperCase() + x.slice(1));
+    const id = 'f' + x.charAt(0).toUpperCase() + x.slice(1);
+    const btn = document.getElementById(id);
     if (btn) btn.className = 'filter-btn ' + (x === f ? 'on' : 'off');
   });
   renderHistory();
@@ -1350,7 +1710,7 @@ function setFilter(f) {
 ═══════════════════════════════════════════════ */
 function openModal(scanId) {
   const scan = scans.find(s => s.id === scanId);
-  if (!scan) return;
+  if (!scan || scan.status === 'scanning') return;
 
   document.getElementById('modalHeader').innerHTML = `
     <button class="modal-back" onclick="closeModal()">
@@ -1366,7 +1726,7 @@ function openModal(scanId) {
   `;
 
   const safeTotalEngines = Math.max(scan.totalEngines, 1);
-  const detRatioW = ((scan.detections / safeTotalEngines) * 100).toFixed(1);
+  const detRatioW  = ((scan.detections / safeTotalEngines) * 100).toFixed(1);
   const safeRatioW = (((safeTotalEngines - scan.detections) / safeTotalEngines) * 100).toFixed(1);
 
   let enginesHTML = '';
@@ -1375,11 +1735,11 @@ function openModal(scanId) {
       <div class="modal-section">
         <div class="modal-section-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
-          מנועים שזיהו איום
+          מנועים שזיהו איום (${scan.realThreats.length})
         </div>
         <div class="engine-list">
           ${scan.realThreats.slice(0, 30).map((t, i) => `
-            <div class="engine-item" style="animation-delay:${i * .04}s">
+            <div class="engine-item" style="animation-delay:${i * .03}s">
               <div style="display:flex;align-items:center;gap:10px">
                 <div class="engine-dot"></div>
                 <span class="engine-name">${esc(t.engine)}</span>
@@ -1387,41 +1747,36 @@ function openModal(scanId) {
               <span class="engine-threat">${esc(t.threat)}</span>
             </div>
           `).join('')}
-          ${scan.realThreats.length > 30 ? `<div style="text-align:center;font-size:10px;color:var(--text3);padding:8px">ועוד ${scan.realThreats.length - 30} מנועים נוספים…</div>` : ''}
+          ${scan.realThreats.length > 30 ? `<div style="text-align:center;font-size:10px;color:var(--text3);padding:8px">ועוד ${scan.realThreats.length - 30} מנועים…</div>` : ''}
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
-  let safeMsgHTML = '';
-  if (scan.status === 'safe') {
-    safeMsgHTML = `
-      <div class="modal-section">
-        <div class="safe-msg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          <div>
-            <div class="safe-msg-title">הקובץ מאובטח</div>
-            <div class="safe-msg-sub">כל ${scan.totalEngines} מנועי הסריקה של VirusTotal אישרו שהקובץ בטוח לשימוש.</div>
-          </div>
+  const safeMsgHTML = scan.status === 'safe' ? `
+    <div class="modal-section">
+      <div class="safe-msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div>
+          <div class="safe-msg-title">הקובץ מאובטח</div>
+          <div class="safe-msg-sub">כל ${scan.totalEngines} מנועי הסריקה של VirusTotal אישרו שהקובץ בטוח לשימוש.</div>
         </div>
       </div>
-    `;
-  }
+    </div>` : '';
 
   const waveBars = Array.from({length:12}, (_,i) =>
-    `<div class="wave-bar" style="background:${i < scan.detections ? 'var(--rose)' : 'rgba(99,102,241,.2)'};animation:wave 1.2s ease-in-out ${i*.08}s infinite"></div>`
+    `<div class="wave-bar" style="background:${i < scan.detections ? 'var(--rose)':'rgba(99,102,241,.2)'};animation:wave 1.2s ease-in-out ${i*.08}s infinite"></div>`
   ).join('');
 
-  const hashDisplay = scan.hash ? scan.hash.substring(0, 16) + '…' : 'ממתין...';
+  const hashDisplay = scan.hash ? scan.hash.substring(0,16) + '…' : null;
   const vtLink = scan.hash ? `https://www.virustotal.com/gui/file/${scan.hash}` : null;
 
-  // Determine shield icon by status
   const shieldSvg = scan.status === 'safe'
     ? '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'
     : scan.status === 'malicious'
     ? '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/>'
     : '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="13"/>';
 
+  const hasThree = scan.status !== 'safe' && vtLink;
   document.getElementById('modalContent').innerHTML = `
     <div class="verdict-card ${scan.status}">
       <div style="display:flex;justify-content:center;margin-bottom:8px">
@@ -1457,7 +1812,7 @@ function openModal(scanId) {
     <div class="modal-section">
       <div class="modal-section-title">יחס זיהוי</div>
       <div class="det-ratio-bar">
-        <div class="det-ratio-bad" style="width:${detRatioW}%"></div>
+        <div class="det-ratio-bad"  style="width:${detRatioW}%"></div>
         <div class="det-ratio-good" style="width:${safeRatioW}%"></div>
       </div>
       <div class="det-ratio-labels">
@@ -1480,11 +1835,11 @@ function openModal(scanId) {
           <span class="file-detail-label">תאריך סריקה</span>
           <span class="file-detail-val">${new Date(scan.timestamp).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</span>
         </div>
-        <div class="file-detail-row" style="border-bottom:${scan.hash ? '1px solid var(--border)' : 'none'};${scan.hash ? '' : 'padding-bottom:0'}">
+        <div class="file-detail-row" style="${hashDisplay ? '' : 'border-bottom:none;padding-bottom:0'}">
           <span class="file-detail-label">סוג קובץ</span>
-          <span class="file-detail-val">.${getExt(scan.filename).toUpperCase() || 'לא ידוע'}</span>
+          <span class="file-detail-val">.${(getExt(scan.filename)||'').toUpperCase() || 'לא ידוע'}</span>
         </div>
-        ${scan.hash ? `
+        ${hashDisplay ? `
         <div class="file-detail-row" style="border-bottom:none;padding-bottom:0">
           <span class="file-detail-label">SHA-256</span>
           <div class="hash-row">
@@ -1495,19 +1850,17 @@ function openModal(scanId) {
       </div>
     </div>
 
-    <div class="modal-actions ${scan.status !== 'safe' && vtLink ? 'three' : ''}">
-      ${scan.status !== 'safe'
-        ? `<button class="modal-delete-btn" onclick="deleteFromModal('${scan.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            מחק
-           </button>`
-        : ''}
-      ${vtLink
-        ? `<a href="${esc(vtLink)}" target="_blank" rel="noopener" class="modal-vt-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            VT
-           </a>`
-        : ''}
+    <div class="modal-actions ${hasThree ? 'three' : ''}">
+      ${scan.status !== 'safe' ? `
+        <button class="modal-delete-btn" onclick="deleteFromModal('${scan.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          מחק
+        </button>` : ''}
+      ${vtLink ? `
+        <a href="${esc(vtLink)}" target="_blank" rel="noopener" class="modal-vt-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          VirusTotal
+        </a>` : ''}
       <button class="modal-close-btn" onclick="closeModal()">סגור</button>
     </div>
   `;
@@ -1530,18 +1883,26 @@ function deleteFromModal(id) {
 }
 
 function copyHash(hash) {
-  navigator.clipboard.writeText(hash).then(() => {
-    showToast('SHA-256 הועתק ✓', 'success');
-  }).catch(() => {
-    // Fallback
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(hash)
+      .then(() => showToast('SHA-256 הועתק ✓', 'success'))
+      .catch(() => copyHashFallback(hash));
+  } else {
+    copyHashFallback(hash);
+  }
+}
+
+function copyHashFallback(hash) {
+  try {
     const el = document.createElement('textarea');
-    el.value = hash;
-    document.body.appendChild(el);
-    el.select();
+    el.value = hash; el.style.position = 'fixed'; el.style.opacity = '0';
+    document.body.appendChild(el); el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
     showToast('SHA-256 הועתק ✓', 'success');
-  });
+  } catch(e) {
+    showToast('לא ניתן להעתיק', 'error');
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1549,14 +1910,10 @@ function copyHash(hash) {
 ═══════════════════════════════════════════════ */
 function togglePanel() {
   const panel = document.getElementById('notifPanel');
-  const isOpen = panel.classList.contains('open');
-  if (!isOpen) {
-    renderNotifPanel();
-    panel.classList.add('open');
-    document.getElementById('panelOverlay').classList.add('show');
-  } else {
-    closePanel();
-  }
+  if (panel.classList.contains('open')) { closePanel(); return; }
+  renderNotifPanel();
+  panel.classList.add('open');
+  document.getElementById('panelOverlay').classList.add('show');
 }
 
 function closePanel() {
@@ -1565,12 +1922,12 @@ function closePanel() {
 }
 
 function renderNotifPanel() {
-  const active = scans.filter(s => s.status === 'scanning');
+  const active  = scans.filter(s => s.status === 'scanning');
   const titleEl = document.getElementById('notifPanelTitle');
   const content = document.getElementById('notifContent');
 
   titleEl.innerHTML = active.length > 0
-    ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--indigo)"></div> סריקות פעילות (${active.length})`
+    ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--indigo);animation:statusDot 2s ease-in-out infinite"></div> סריקות פעילות (${active.length})`
     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg> התראות`;
 
   if (!active.length) {
@@ -1595,7 +1952,7 @@ function renderNotifPanel() {
             <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">${esc(s.filename)}</div>
             <div style="font-size:10px;color:var(--text3)">VirusTotal · ${esc(s.size)}</div>
           </div>
-          <div style="font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--indigo)" id="npct-${s.id}">${s.progress}%</div>
+          <div style="font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--indigo)" id="npct-${s.id}">${Math.round(s.progress)}%</div>
         </div>
         <div class="prog-bar" style="margin-top:10px">
           <div class="prog-fill" id="npf-${s.id}" style="width:${s.progress}%"></div>
@@ -1612,8 +1969,15 @@ function renderNotifPanel() {
    HISTORY
 ═══════════════════════════════════════════════ */
 function clearHistory() {
-  if (!confirm('למחוק את כל ההיסטוריה?')) return;
-  scans = [];
+  // Use custom confirm via toast-style confirmation
+  if (!scans.filter(s => s.status !== 'scanning').length) {
+    showToast('אין היסטוריה למחיקה', 'info');
+    return;
+  }
+  // Simple native confirm (robust cross-device)
+  const ok = window.confirm('למחוק את כל ההיסטוריה?');
+  if (!ok) return;
+  scans = scans.filter(s => s.status === 'scanning'); // keep active scans
   saveScans();
   renderAll();
   showToast('ההיסטוריה נמחקה', 'info');
@@ -1625,9 +1989,12 @@ function clearHistory() {
 function switchTab(tab) {
   ['home','history','settings'].forEach(t => {
     document.getElementById('page-' + t).classList.toggle('active', t === tab);
-    document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+    document.getElementById('nav-'  + t).classList.toggle('active', t === tab);
   });
   if (tab === 'history') renderHistory();
+  // Scroll to top on tab switch
+  const content = document.getElementById('content');
+  if (content) content.scrollTop = 0;
 }
 
 /* ═══════════════════════════════════════════════
@@ -1636,23 +2003,18 @@ function switchTab(tab) {
 let toastTimer;
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
-  const svg = document.getElementById('toastSvg');
+  const svg   = document.getElementById('toastSvg');
   const msgEl = document.getElementById('toastMsg');
   clearTimeout(toastTimer);
   toast.className = `toast ${type}`;
   msgEl.textContent = msg;
-  if (type === 'success') svg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
-  else if (type === 'error') svg.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/>';
-  else svg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/>';
-  requestAnimationFrame(() => toast.classList.add('show'));
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 3400);
-}
-
-/* ═══════════════════════════════════════════════
-   SERVICE WORKER
-═══════════════════════════════════════════════ */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (type === 'success')     svg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+  else if (type === 'error')  svg.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/>';
+  else                        svg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/>';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('show'));
+  });
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
 /* ═══════════════════════════════════════════════
