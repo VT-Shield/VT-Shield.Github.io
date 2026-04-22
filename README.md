@@ -1,14 +1,15 @@
-# 🛡️ VT Shield v4.0
+# 🛡️ VT Shield v4.2
 
 ממשק PWA מתקדם לסריקת קבצים דרך [VirusTotal API v3](https://docs.virustotal.com/reference/overview) עם 70+ מנועי אנטי-וירוס.
+מערכת יציבה לחלוטין, תומכת באופן רספונסיבי במחשב שולחני ובטלפונים ניידים.
 
 ## קבצים
 
 | קובץ | תפקיד |
 |------|--------|
-| `index.html` | האפליקציה המלאה (HTML + CSS + JS) |
-| `manifest.json` | הגדרות PWA (ניתן להתקנה כאפליקציה) |
-| `sw.js` | Service Worker (עבודה אופליין + שיתוף קבצים) |
+| `index.html` | האפליקציה המלאה (HTML + CSS + JS) מותאמת דסקטופ ומובייל. |
+| `manifest.json` | הגדרות PWA (התקנה כאפליקציה בכל הפלטפורמות). |
+| `sw.js` | Service Worker (אופליין, התראות Push ושיתוף קבצים). |
 
 ## הפעלה
 
@@ -19,6 +20,7 @@ python3 -m http.server 8080
 # שרת מקומי (Node)
 npx serve .
 ```
+
 פתח: `http://localhost:8080`
 
 ## מפתח API
@@ -27,19 +29,11 @@ npx serve .
 2. קבל מפתח: https://www.virustotal.com/gui/my-apikey
 3. הדבק בהגדרות האפליקציה
 
-## תכונות
+## תכונות חדשות בגרסה 4.2
 
-- **כל סוגי הקבצים** — PDF, EXE, APK, Office, ZIP, Image, Audio, Video, Code ועוד
-- **קבצים גדולים** — עד 32MB (חינם) / עד 650MB (פרמיום) דרך upload_url
-- **גרור ושחרר** — drag & drop על אזור ההעלאה  
-- **ביטול סריקה** — ביטול מיידי דרך AbortController
-- **העתק SHA-256** — בלחיצה אחת
-- **קישור לVT** — פתח תוצאה ישירות ב-VirusTotal
-- **PWA** — ניתן להתקנה כאפליקציה נייטיב
-- **מצב כהה/בהיר** — מתחלף עם שמירה
-- **היסטוריה** — שמורה ב-localStorage עם חיפוש וסינון
-- **התראות דפדפן** — על תוצאת כל סריקה
-- **Retry אוטומטי** — על שגיאות 429 (rate limit) ושגיאות רשת
+- **עיצוב רספונסיבי לחלוטין** — תצוגה צרה וחכמה בטלפון נייד ותצוגת דאשבורד רחבה ונוחה במחשב.
+- **התראות Push משופרות** — שימוש אקטיבי ב-Service Worker להתראות איכותיות גם ב-Windows וגם ב-Android/iOS (כשהאפליקציה מותקנת).
+- **יציבות מובטחת** — מערכת ניטור חיבור רשת (Offline/Online) מבוססת ויציבה שלא תוקעת את חוויית המשתמש.
 
 ## מגבלות API חינמי
 
@@ -48,13 +42,3 @@ npx serve .
 | בקשות לדקה | 4 |
 | בקשות ביום | 500 |
 | גודל קובץ | 32 MB |
-
-## טכנולוגיות
-
-- Vanilla JS (ללא תלויות)
-- VirusTotal API v3
-- Web Notifications API
-- Clipboard API
-- AbortController
-- Service Worker / PWA
-- localStorage
