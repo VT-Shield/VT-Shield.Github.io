@@ -719,14 +719,14 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#60a5fa"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div class="settings-label">
-            <div class="settings-label-main">התראות דחף (Push)</div>
-            <div class="settings-label-sub">קבל התראות בסיום הסריקה</div>
+            <div class="settings-label-main">התראות דפדפן</div>
+            <div class="settings-label-sub">הצג הודעות על תוצאות הסריקה</div>
           </div>
           <button class="toggle on" id="toggleNotifs" onclick="toggleNotifications()">
             <div class="toggle-knob"></div>
           </button>
         </div>
-        <button class="notif-request-btn" id="notifPermBtn" onclick="requestNotifPermission()">🔔 אפשר קבלת התראות</button>
+        <button class="notif-request-btn" id="notifPermBtn" onclick="requestNotifPermission()">🔔 אפשר התראות דפדפן</button>
         <div class="settings-item">
           <div class="settings-icon" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.12)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--violet)" id="darkModeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -757,7 +757,7 @@ body{font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased
         <div class="about-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="about-name">VT Shield</div>
         <div class="about-ver">v4.2.0 · Powered by VirusTotal API v3</div>
-        <div class="about-desc">ממשק מתקדם המבוסס צד-לקוח לבדיקת כל סוגי הקבצים דרך 70+ מנועי אנטי-וירוס בזמן אמת. תואם למחשב ולמובייל.</div>
+        <div class="about-desc">ממשק מתקדם המבוסס צד-לקוח לבדיקת כל סוגי הקבצים דרך 70+ מנועי אנטי-וירוס בזמן אמת.</div>
       </div>
     </div>
   </div>
@@ -992,7 +992,6 @@ function getStats() {
    INIT
 ═══════════════════════════════════════════════ */
 function init() {
-  // Load saved settings
   const savedKey = localStorage.getItem('vts_key');
   if (savedKey) document.getElementById('apiKeyInp').value = savedKey;
 
@@ -1002,7 +1001,6 @@ function init() {
   const savedNotifs = localStorage.getItem('vts_notifs');
   if (savedNotifs !== null) notifsEnabled = savedNotifs === 'true';
 
-  // Load scan history, clear any stale "scanning" states
   try {
     const saved = localStorage.getItem('vts_scans');
     scans = saved ? JSON.parse(saved) : [];
@@ -1028,7 +1026,6 @@ function saveScans() {
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then(reg => {
-    // Listen for shared files from the SW share_target
     navigator.serviceWorker.addEventListener('message', e => {
       if (e.data && e.data.type === 'SHARE_TARGET') {
         const { name, size, fileType, buffer } = e.data;
@@ -1042,7 +1039,7 @@ function registerSW() {
 }
 
 /* ═══════════════════════════════════════════════
-   NETWORK MONITOR (FIXED)
+   NETWORK MONITOR
 ═══════════════════════════════════════════════ */
 function setupNetworkMonitor() {
   const banner = document.getElementById('networkBanner');
@@ -1059,7 +1056,7 @@ function setupNetworkMonitor() {
   
   window.addEventListener('online', update);
   window.addEventListener('offline', update);
-  update(); // Initial check
+  update();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1159,7 +1156,7 @@ function toggleDarkMode() {
 }
 
 /* ═══════════════════════════════════════════════
-   NOTIFICATIONS (UPGRADED FOR DESKTOP & MOBILE PWA)
+   NOTIFICATIONS
 ═══════════════════════════════════════════════ */
 function toggleNotifications() {
   notifsEnabled = !notifsEnabled;
@@ -1206,7 +1203,6 @@ async function sendBrowserNotif(filename, status, detections, totalEngines) {
   };
 
   try {
-    // מנסה לשלוח דרך ה-Service Worker (הכי אמין ל-PWA במובייל ובמחשב)
     if (navigator.serviceWorker) {
       const reg = await navigator.serviceWorker.ready;
       reg.showNotification(title, options);
@@ -1260,7 +1256,7 @@ function handleDrop(e) {
 }
 function handleFileSelect(e) {
   Array.from(e.target.files).forEach(f => processFile(f));
-  e.target.value = ''; // מאפשר בחירה של אותו קובץ שוב
+  e.target.value = '';
 }
 
 function processFile(file) {
@@ -1306,8 +1302,15 @@ async function fetchVT(url, options, isUpload = false) {
 }
 
 /* ═══════════════════════════════════════════════
-   REAL SCAN — VirusTotal API v3
+   REAL SCAN — VirusTotal API v3 (עם בדיקת Hash מקומית)
 ═══════════════════════════════════════════════ */
+async function calculateLocalHash(file) {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function startRealScan(file) {
   const apiKey = localStorage.getItem('vts_key');
   if (!apiKey || apiKey.length < 32) {
@@ -1328,7 +1331,7 @@ async function startRealScan(file) {
     id, filename: file.name, size: sz,
     status: 'scanning', detections: 0, totalEngines: 0,
     timestamp: Date.now(), hash: null,
-    progress: 0, verdict: isLarge ? 'מקבל URL להעלאה...' : 'מכין העלאה...',
+    progress: 0, verdict: 'מחשב חתימה דיגיטלית...',
     source: 'העלאה', realThreats: [],
   };
   scans.unshift(scan);
@@ -1342,124 +1345,149 @@ async function startRealScan(file) {
   let pollProgressInterval   = null;
 
   try {
-    /* ── Step 1: Upload URL for large files ──────────────── */
-    let uploadUrl = 'https://www.virustotal.com/api/v3/files';
-    if (isLarge) {
-      updateScanVerdict(id, 'מקבל URL להעלאה...');
-      const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
-        headers: { 'x-apikey': apiKey },
-        signal: abort.signal,
-      });
-      if (!urlRes.ok) {
-        if (urlRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
-        if (urlRes.status === 403) throw new Error('מפתח זה אינו תומך בקבצים גדולים (מקסימום 32 MB)');
-        if (urlRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
-        throw new Error(`שגיאה בקבלת URL להעלאה (HTTP ${urlRes.status})`);
-      }
-      uploadUrl = urlRes.data?.data;
-      if (!uploadUrl) throw new Error('תשובת API לא תקינה לקבלת URL');
-    }
+    /* ── Step 0: Local Hash Check ───────────────────── */
+    updateScanVerdict(id, 'מחשב Hash מקומי...');
+    const localHash = await calculateLocalHash(file);
+    updateActiveScan(id, 10);
 
-    /* ── Step 2: Upload file (0 → 85%) ──────────────────── */
-    updateScanVerdict(id, 'מעלה קובץ...');
-    let uploadProg = 3;
-    const step = isLarge ? 0.4 : 3;
-    const interval = isLarge ? 4000 : 800;
-    uploadProgressInterval = setInterval(() => {
-      uploadProg = Math.min(uploadProg + step, 82);
-      updateActiveScan(id, uploadProg);
-    }, interval);
+    if (!activeScans[id]) return; // בוטל
 
-    const formData = new FormData();
-    formData.append('file', file, file.name);
-
-    const uploadRes = await fetchVT(uploadUrl, {
-      method: 'POST',
+    updateScanVerdict(id, 'בודק מאגר עולמי...');
+    const hashRes = await fetchVT(`https://www.virustotal.com/api/v3/files/${localHash}`, {
       headers: { 'x-apikey': apiKey },
-      body: formData,
       signal: abort.signal,
-    }, true);
-
-    clearInterval(uploadProgressInterval);
-    uploadProgressInterval = null;
-    updateActiveScan(id, 86);
-
-    if (!uploadRes.ok) {
-      if (uploadRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
-      if (uploadRes.status === 413) throw new Error(`הקובץ גדול מדי: ${sz}`);
-      if (uploadRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
-      if (uploadRes.status === 400) throw new Error('קובץ לא תקין או פגום');
-      throw new Error(`שגיאה בהעלאה (HTTP ${uploadRes.status})`);
-    }
-
-    const analysisId = uploadRes.data?.data?.id;
-    if (!analysisId) throw new Error('תשובת VT API לא תקינה — אין מזהה ניתוח');
-
-    /* ── Step 3: Poll for results (86 → 97%) ────────────── */
-    updateScanVerdict(id, 'ממתין לניתוח...');
-    updateActiveScan(id, 86);
-
-    let pollProg = 86;
-    pollProgressInterval = setInterval(() => {
-      if (!activeScans[id]) { clearInterval(pollProgressInterval); return; }
-      pollProg = Math.min(pollProg + 0.25, 97);
-      updateActiveScan(id, pollProg);
-    }, 1500);
+    });
 
     let finalData = null;
-    let pollData  = null;
-    let pollCount = 0;
-    const MAX_POLLS = 90;
-    let consecutiveErrors = 0;
-    const pollMessages = ['ממתין לניתוח...', 'מנתח...', 'בודק מנועים...', 'כמעט מוכן...'];
+    let pollData = null;
 
-    while (!finalData && activeScans[id] && pollCount < MAX_POLLS) {
-      await sleep(4000, abort.signal);
-      if (!activeScans[id]) break;
-      pollCount++;
-      updateScanVerdict(id, pollMessages[Math.min(Math.floor(pollCount / 5), pollMessages.length - 1)]);
-
-      try {
-        const pollRes = await fetchVT(
-          `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
-          { headers: { 'x-apikey': apiKey }, signal: abort.signal }
-        );
-        if (pollRes.status === 429) {
-          await sleep(16000, abort.signal);
-          continue;
+    if (hashRes.ok && hashRes.data?.data) {
+      // קובץ קיים! יש לנו את התוצאות בלי להעלות
+      finalData = hashRes.data.data;
+      updateActiveScan(id, 95);
+    } else {
+      // הקובץ לא מוכר, חייבים להעלות רגיל
+      
+      /* ── Step 1: Upload URL for large files ──────────────── */
+      let uploadUrl = 'https://www.virustotal.com/api/v3/files';
+      if (isLarge) {
+        updateScanVerdict(id, 'מקבל URL להעלאה...');
+        const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
+          headers: { 'x-apikey': apiKey },
+          signal: abort.signal,
+        });
+        if (!urlRes.ok) {
+          if (urlRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
+          if (urlRes.status === 403) throw new Error('מפתח זה אינו תומך בקבצים גדולים (מקסימום 32 MB)');
+          if (urlRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
+          throw new Error(`שגיאה בקבלת URL להעלאה (HTTP ${urlRes.status})`);
         }
-        if (pollRes.status === 404) {
-          await sleep(6000, abort.signal);
-          continue;
-        }
-        if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status}`);
-
-        consecutiveErrors = 0;
-        pollData = pollRes.data;
-        if (pollData?.data?.attributes?.status === 'completed') {
-          finalData = pollData.data;
-        }
-      } catch (pollErr) {
-        if (pollErr.name === 'AbortError') throw pollErr;
-        consecutiveErrors++;
-        if (consecutiveErrors >= 5) throw new Error('אובד קשר עם שרתי VirusTotal — בדוק חיבור');
-        await sleep(4000, abort.signal);
+        uploadUrl = urlRes.data?.data;
+        if (!uploadUrl) throw new Error('תשובת API לא תקינה לקבלת URL');
       }
+
+      /* ── Step 2: Upload file (10 → 85%) ──────────────────── */
+      updateScanVerdict(id, 'מעלה קובץ...');
+      let uploadProg = 10;
+      const step = isLarge ? 0.4 : 3;
+      const interval = isLarge ? 4000 : 800;
+      uploadProgressInterval = setInterval(() => {
+        uploadProg = Math.min(uploadProg + step, 82);
+        updateActiveScan(id, uploadProg);
+      }, interval);
+
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+
+      const uploadRes = await fetchVT(uploadUrl, {
+        method: 'POST',
+        headers: { 'x-apikey': apiKey },
+        body: formData,
+        signal: abort.signal,
+      }, true);
+
+      clearInterval(uploadProgressInterval);
+      uploadProgressInterval = null;
+      updateActiveScan(id, 86);
+
+      if (!uploadRes.ok) {
+        if (uploadRes.status === 401) throw new Error('מפתח API שגוי — בדוק בהגדרות');
+        if (uploadRes.status === 413) throw new Error(`הקובץ גדול מדי: ${sz}`);
+        if (uploadRes.status === 429) throw new Error('חרגת ממגבלת הבקשות. המתן דקה ונסה שוב');
+        if (uploadRes.status === 400) throw new Error('קובץ לא תקין או פגום');
+        throw new Error(`שגיאה בהעלאה (HTTP ${uploadRes.status})`);
+      }
+
+      const analysisId = uploadRes.data?.data?.id;
+      if (!analysisId) throw new Error('תשובת VT API לא תקינה — אין מזהה ניתוח');
+
+      /* ── Step 3: Poll for results (86 → 97%) ────────────── */
+      updateScanVerdict(id, 'ממתין לניתוח...');
+      updateActiveScan(id, 86);
+
+      let pollProg = 86;
+      pollProgressInterval = setInterval(() => {
+        if (!activeScans[id]) { clearInterval(pollProgressInterval); return; }
+        pollProg = Math.min(pollProg + 0.25, 97);
+        updateActiveScan(id, pollProg);
+      }, 1500);
+
+      let pollCount = 0;
+      const MAX_POLLS = 90;
+      let consecutiveErrors = 0;
+      const pollMessages = ['ממתין לניתוח...', 'מנתח...', 'בודק מנועים...', 'כמעט מוכן...'];
+
+      while (!finalData && activeScans[id] && pollCount < MAX_POLLS) {
+        await sleep(4000, abort.signal);
+        if (!activeScans[id]) break;
+        pollCount++;
+        updateScanVerdict(id, pollMessages[Math.min(Math.floor(pollCount / 5), pollMessages.length - 1)]);
+
+        try {
+          const pollRes = await fetchVT(
+            `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
+            { headers: { 'x-apikey': apiKey }, signal: abort.signal }
+          );
+          if (pollRes.status === 429) {
+            await sleep(16000, abort.signal);
+            continue;
+          }
+          if (pollRes.status === 404) {
+            await sleep(6000, abort.signal);
+            continue;
+          }
+          if (!pollRes.ok) throw new Error(`שגיאת HTTP ${pollRes.status}`);
+
+          consecutiveErrors = 0;
+          pollData = pollRes.data;
+          if (pollData?.data?.attributes?.status === 'completed') {
+            finalData = pollData.data;
+          }
+        } catch (pollErr) {
+          if (pollErr.name === 'AbortError') throw pollErr;
+          consecutiveErrors++;
+          if (consecutiveErrors >= 5) throw new Error('אובד קשר עם שרתי VirusTotal — בדוק חיבור');
+          await sleep(4000, abort.signal);
+        }
+      }
+
+      clearInterval(pollProgressInterval);
+      pollProgressInterval = null;
+
+      if (!activeScans[id]) return;
+      if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן — נסה שוב מאוחר יותר');
     }
-
-    clearInterval(pollProgressInterval);
-    pollProgressInterval = null;
-
-    if (!activeScans[id]) return;
-    if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן — נסה שוב מאוחר יותר');
 
     /* ── Step 4: Process results ─────────────────────────── */
     const attrs   = finalData.attributes || {};
-    const stats   = attrs.stats || {};
-    const results = attrs.results || {};
+    // ניהול תצורות מידע שונות (תלוי אם זה הגיע מזיהוי Hash או מהעלאה)
+    const stats   = attrs.last_analysis_stats || attrs.stats || {};
+    const results = attrs.last_analysis_results || attrs.results || {};
 
     const hash = finalData?.meta?.file_info?.sha256
               || pollData?.data?.meta?.file_info?.sha256
+              || attrs.sha256
+              || localHash
               || null;
 
     const detections   = (stats.malicious || 0) + (stats.suspicious || 0);
@@ -1979,7 +2007,7 @@ function clearHistory() {
   }
   const ok = window.confirm('למחוק את כל ההיסטוריה?');
   if (!ok) return;
-  scans = scans.filter(s => s.status === 'scanning'); // keep active scans
+  scans = scans.filter(s => s.status === 'scanning');
   saveScans();
   renderAll();
   showToast('ההיסטוריה נמחקה', 'info');
