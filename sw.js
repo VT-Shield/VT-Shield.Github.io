@@ -1,6 +1,8 @@
 /* VT Shield — Service Worker v4.2 */
 const CACHE = 'vt-shield-v4.2';
-const SHELL = ['./', './index.html'];
+
+// כאן הוספתי את ה-icon.png ואת manifest.json לשמירה מראש בזיכרון
+const SHELL = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
