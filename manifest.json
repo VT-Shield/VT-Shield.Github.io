@@ -4,7 +4,7 @@
   "description": "סורק קבצים מתקדם המבוסס על VirusTotal API עם 70+ מנועי אנטי-וירוס",
   "start_url": ".",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#06061a",
   "theme_color": "#06061a",
   "lang": "he",
