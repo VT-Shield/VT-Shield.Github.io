@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-/* ═══════════════ CSS VARIABLES (CLEAN & SOLID) ═══════════════ */
+/* ═══════════════ CSS VARIABLES ═══════════════ */
 :root {
   --bg: #050508;
   --surface: #111218;
@@ -46,81 +46,57 @@
   --inp-border: #cbd5e1;
 }
 
-/* ═══════════════ RESET & BASE ARCHITECTURE ═══════════════ */
+/* ═══════════════ RESET ═══════════════ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;scrollbar-width:none}
 *::-webkit-scrollbar{display:none}
+html,body{height:100%;width:100%;background:var(--bg);font-family:'Heebo',system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background 0.3s;color:var(--text);overflow:hidden}
 
-html, body {
-  height: 100%;
-  width: 100%;
-  background: var(--bg);
-  font-family: 'Heebo', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  transition: background 0.3s;
-  color: var(--text);
-  overflow: hidden;
-}
+/* ═══════════════ APP CONTAINER ═══════════════ */
+#app{display:flex;flex-direction:column;width:100%;max-width:430px;height:100%;margin:0 auto;position:relative;background:var(--bg)}
+.content{flex:1;overflow-y:auto;padding-bottom:90px}
 
-/* ═══════════════ APP CONTAINER (MOBILE FIRST) ═══════════════ */
-#app {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 430px;
-  height: 100%;
-  margin: 0 auto;
-  position: relative;
-  background: var(--bg);
-}
+/* ═══════════════ OVERLAY/PANEL/MODAL ═══════════════ */
+.panel-overlay,.modal-overlay{position:absolute;inset:0;pointer-events:none;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);opacity:0;z-index:45;transition:opacity .3s}
+.panel-overlay.show,.modal-overlay.show{opacity:1;pointer-events:auto}
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;z-index:40;background:var(--surface-solid);border-top:1px solid var(--border)}
+.notif-panel{position:absolute;top:0;left:0;right:0;z-index:50;border-radius:0 0 24px 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow:hidden;transform:translateY(-110%);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;pointer-events:none}
+.notif-panel.open{transform:translateY(0);opacity:1;pointer-events:auto}
+.modal,.ios-install-sheet{position:absolute;bottom:0;left:0;right:0;z-index:60;background:var(--surface-solid);border-radius:28px 28px 0 0;border-top:1px solid var(--border);transform:translateY(100%);transition:transform .35s cubic-bezier(.25,.46,.45,.94);max-height:92vh;overflow:hidden;pointer-events:none}
+.modal.show,.ios-install-sheet.show{transform:translateY(0);pointer-events:auto}
+.network-banner{position:absolute;top:0;left:0;right:0;z-index:55;background:var(--rose);padding:8px 20px;text-align:center;font-size:12px;font-weight:800;color:#fff;transform:translateY(-100%);transition:transform .35s ease}
+.network-banner.show{transform:translateY(0)}
+.toast{position:absolute;bottom:85px;left:50%;transform:translateX(-50%) translateY(20px);z-index:70;width:85%;max-width:380px;border-radius:16px;background:var(--surface);border:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.install-banner{position:absolute;bottom:85px;left:50%;transform:translateX(-50%) translateY(140%);z-index:38;width:calc(100% - 32px);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:14px 14px 14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.install-banner.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
+/* Install banner inner elements */
+.install-banner-icon{width:40px;height:40px;border-radius:12px;background:rgba(99,102,241,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--indigo)}
+.install-banner-icon svg{width:20px;height:20px}
+.install-banner-text{flex:1;min-width:0}
+.install-banner-title{font-size:13px;font-weight:800;color:var(--text)}
+.install-banner-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.install-now-btn{padding:8px 16px;background:var(--indigo);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;flex-shrink:0}
+.install-now-btn:active{opacity:.8}
+.install-dismiss-btn{width:30px;height:30px;border:1px solid var(--border);background:var(--inp-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);flex-shrink:0}
 
-.content {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: 90px;
-}
+/* iOS Install */
+.ios-install-overlay{position:absolute;inset:0;z-index:55;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+.ios-install-overlay.show{opacity:1;pointer-events:auto}
+.ios-step{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border)}
+.ios-step-num{width:28px;height:28px;border-radius:50%;background:var(--indigo);color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ios-step-icon{width:36px;height:36px;background:var(--inp-bg);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2)}
+.ios-step-icon svg{width:18px;height:18px}
+.ios-step-text{font-size:13px;color:var(--text2);line-height:1.5}
+.ios-close-btn{display:block;width:calc(100% - 40px);margin:16px 20px 32px;padding:14px;background:var(--indigo);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif}
 
-/* Overlays & Fixed elements */
-.panel-overlay, .modal-overlay { position: absolute; inset: 0; pointer-events: none; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); opacity: 0; z-index: 45; transition: opacity .3s; }
-.panel-overlay.show, .modal-overlay.show { opacity: 1; pointer-events: auto; }
-
-.bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; z-index: 40; background: var(--surface-solid); border-top: 1px solid var(--border); }
-.notif-panel { position: absolute; top: 0; left: 0; right: 0; z-index: 50; border-radius: 0 0 24px 24px; background: var(--surface); border-bottom: 1px solid var(--border); overflow: hidden; transform: translateY(-110%); opacity: 0; transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s; pointer-events: none; }
-.notif-panel.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
-.modal, .ios-install-sheet { position: absolute; bottom: 0; left: 0; right: 0; z-index: 60; background: var(--surface-solid); border-radius: 28px 28px 0 0; border-top: 1px solid var(--border); transform: translateY(100%); transition: transform .35s cubic-bezier(.25,.46,.45,.94); max-height: 92vh; overflow: hidden; pointer-events: none; }
-.modal.show, .ios-install-sheet.show { transform: translateY(0); pointer-events: auto; }
-
-.network-banner { position: absolute; top: 0; left: 0; right: 0; z-index: 55; background: var(--rose); padding: 8px 20px; text-align: center; font-size: 12px; font-weight: 800; color: #fff; transform: translateY(-100%); transition: transform .35s ease; }
-.network-banner.show { transform: translateY(0); }
-
-.toast { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(20px); z-index: 70; width: 85%; max-width: 380px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 12px; opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-
-.install-banner { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(140%); z-index: 38; width: calc(100% - 32px); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 14px 14px 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.5); pointer-events: none; transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
-.install-banner.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
-
-/* ═══════════════ DESKTOP ARCHITECTURE ═══════════════ */
-@media (min-width: 768px) {
-  body {
-    background: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .light body { background: #cbd5e1; }
-  
-  #app {
-    max-width: 800px;
-    height: 90vh;
-    max-height: 900px;
-    border-radius: 24px;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    border: 1px solid var(--border);
-  }
-  .bottom-nav { border-radius: 0 0 24px 24px; }
-  .notif-panel { border-radius: 24px 24px 24px 24px; }
-  .stats-grid, .history-stats { gap: 20px !important; }
-  .actions-wrap { max-width: 500px; margin: 0 auto 30px !important; }
+/* ═══════════════ DESKTOP ═══════════════ */
+@media (min-width:768px){
+  body{background:#000;display:flex;align-items:center;justify-content:center}
+  .light body{background:#cbd5e1}
+  #app{max-width:800px;height:90vh;max-height:900px;border-radius:24px;box-shadow:0 0 50px rgba(0,0,0,.8);border:1px solid var(--border)}
+  .bottom-nav{border-radius:0 0 24px 24px}
+  .notif-panel{border-radius:24px 24px 24px 24px}
+  .history-stats,.stats-grid{gap:20px!important}
 }
 
 /* ═══════════════ KEYFRAMES ═══════════════ */
@@ -129,271 +105,259 @@ html, body {
 @keyframes statusDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
 @keyframes borderPulse{0%,100%{border-color:rgba(99,102,241,.2)}50%{border-color:rgba(99,102,241,.6)}}
 @keyframes wave{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{opacity:.4}50%{opacity:.8}100%{opacity:.4}}
 
 /* ═══════════════ HEADER ═══════════════ */
-.header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:30;background:var(--surface-solid);border-bottom:1px solid var(--border)}
-.logo-wrap{display:flex;align-items:center;gap:12px}
-.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
-.logo-icon svg{width:20px;height:20px;color:#fff}
+.header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:30;background:var(--surface-solid);border-bottom:1px solid var(--border)}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.logo-icon svg{width:18px;height:18px;color:#fff}
 .active-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:#60a5fa;border-radius:50%;border:2px solid var(--bg);animation:statusDot 2s ease-in-out infinite;display:none}
 .active-dot.show{display:block}
-.logo-text{font-size:18px;font-weight:900;letter-spacing:-.02em;color:var(--text)}
-.logo-status{display:flex;align-items:center;gap:6px;margin-top:2px}
+.logo-text{font-size:17px;font-weight:900;letter-spacing:-.02em;color:var(--text)}
+.logo-status{display:flex;align-items:center;gap:5px;margin-top:2px}
 .status-indicator{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:statusDot 2s ease-in-out infinite}
 .status-label{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emerald)}
-.notif-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;transition:background .2s;position:relative;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
+.notif-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;transition:background .2s;position:relative;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
 .notif-btn:active{background:var(--inp-bg)}
-.notif-btn svg{width:18px;height:18px}
-.notif-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;background:var(--rose);border-radius:9px;font-size:9px;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 4px}
+.notif-btn svg{width:17px;height:17px}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;background:var(--rose);border-radius:9px;font-size:9px;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 3px}
 .notif-badge.show{display:flex}
 
-.page{padding:20px;display:none;animation:slideUp .22s ease;position:relative;z-index:10}
+/* ═══════════════ PAGES ═══════════════ */
+.page{padding:16px 16px 8px;display:none;animation:slideUp .22s ease;position:relative;z-index:10}
 .page.active{display:block}
 
-/* ═══════════════ HERO CARD ═══════════════ */
-.hero-card{border-radius:20px;overflow:hidden;position:relative;margin-bottom:20px;background:var(--surface);border:1px solid var(--border)}
-.hero-inner{position:relative;padding:24px 20px 20px;text-align:center}
-
-.shield-wrap{display:flex;justify-content:center;margin-bottom:16px;position:relative;height:120px}
-.shield-rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+/* ═══════════════ HERO STATUS CARD ═══════════════ */
+.hero-card{border-radius:18px;overflow:hidden;position:relative;margin-bottom:14px;background:var(--surface);border:1px solid var(--border)}
+.hero-inner{padding:16px}
+.hero-status-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.shield-wrap{width:52px;height:52px;flex-shrink:0;position:relative}
+.shield-rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .ring{position:absolute;border-radius:50%;border:1px solid rgba(99,102,241,.3);animation:pulseRing 2.2s cubic-bezier(.4,0,.6,1) infinite}
-.ring-1{width:80px;height:80px}
-.ring-2{width:100px;height:100px;animation-delay:.6s;border-color:rgba(99,102,241,.2)}
-.ring-3{width:120px;height:120px;animation-delay:1.2s;border-color:rgba(99,102,241,.1)}
-.shield-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)}
-.shield-box svg{width:26px;height:26px;color:var(--indigo)}
-.shield-box.safe svg{color:var(--emerald)}
-.shield-box.malicious svg{color:var(--rose)}
-.shield-box.suspicious svg{color:var(--amber)}
+.ring-1{width:40px;height:40px}
+.ring-2{width:50px;height:50px;animation-delay:.6s;border-color:rgba(99,102,241,.2)}
+.shield-box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);width:52px;height:52px}
+/* FIX: Explicit SVG sizing inside shield box */
+.shield-box svg{width:22px;height:22px;display:block;flex-shrink:0}
 .shield-box.safe{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2)}
+.shield-box.safe svg{color:var(--emerald)}
 .shield-box.malicious{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2)}
+.shield-box.malicious svg{color:var(--rose)}
 .shield-box.suspicious{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2)}
-
-.status-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:99px;margin-bottom:8px;border:1px solid rgba(16,185,129,.2);background:rgba(16,185,129,.1)}
-.status-pill.scanning{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.1)}
-.status-pill-dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);animation:statusDot 2s ease-in-out infinite}
+.shield-box.suspicious svg{color:var(--amber)}
+.shield-box.scanning{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.3)}
+.shield-box.scanning svg{color:var(--indigo)}
+.orbit-dot{display:none}
+.orbit-dot.show{display:block}
+.hero-text{flex:1;min-width:0}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;margin-bottom:6px;border:1px solid rgba(16,185,129,.2);background:rgba(16,185,129,.08)}
+.status-pill.scanning{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.08)}
+.status-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:statusDot 2s ease-in-out infinite;flex-shrink:0}
 .status-pill.scanning .status-pill-dot{background:var(--indigo)}
-.status-pill-text{font-size:11px;font-weight:800;color:var(--emerald)}
+.status-pill-text{font-size:10px;font-weight:800;color:var(--emerald)}
 .status-pill.scanning .status-pill-text{color:var(--indigo)}
-.hero-title{font-size:22px;font-weight:900;letter-spacing:-.02em;color:var(--text)}
-.hero-sub{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.6;max-width:260px;margin-left:auto;margin-right:auto}
-
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.stat-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
-.stat-icon{display:flex;justify-content:center;margin-bottom:6px;color:var(--text3)}
-.stat-icon svg{width:16px;height:16px}
-.stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:900}
+.hero-title{font-size:16px;font-weight:900;letter-spacing:-.02em;color:var(--text);line-height:1.2}
+.hero-sub{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center}
+.stat-icon{display:flex;justify-content:center;margin-bottom:5px;color:var(--text3)}
+.stat-icon svg{width:14px;height:14px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:900}
 .stat-val.indigo{color:var(--indigo)}
 .stat-val.rose{color:var(--rose)}
 .stat-val.amber{color:var(--amber)}
 .stat-label{font-size:9px;font-weight:700;color:var(--text3);margin-top:2px}
 
-.actions-wrap{display:flex;justify-content:center;margin-bottom:20px}
-.action-btn{border-radius:20px;overflow:hidden;cursor:pointer;border:none;background:transparent;padding:0;text-align:center;width:100%}
-.action-inner{padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;border:1px dashed var(--border);border-radius:20px;transition:all .2s;background:var(--surface)}
+/* ═══════════════ UPLOAD AREA ═══════════════ */
+.actions-wrap{margin-bottom:14px}
+.action-btn{border-radius:18px;overflow:hidden;cursor:pointer;border:none;background:transparent;padding:0;text-align:center;width:100%}
+.action-inner{padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;border:1.5px dashed var(--border);border-radius:18px;transition:all .2s;background:var(--surface)}
 .action-inner.upload:active,.action-inner.upload:hover{border-color:var(--indigo);background:rgba(99,102,241,.05)}
-.action-inner.upload.drag-over{border-color:var(--indigo);background:rgba(99,102,241,.1)}
-.action-icon{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(99,102,241,.1);color:var(--indigo)}
-.action-icon svg{width:22px;height:22px}
-.action-label{font-weight:800;font-size:15px;color:var(--text)}
-.upload-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:rgba(99,102,241,.1);font-size:11px;font-weight:800;color:var(--indigo)}
+.action-inner.upload.drag-over{border-color:var(--indigo);background:rgba(99,102,241,.1);transform:scale(1.01)}
+.action-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(99,102,241,.12);color:var(--indigo)}
+.action-icon svg{width:20px;height:20px}
+.action-label{font-weight:800;font-size:14px;color:var(--text)}
+.upload-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;background:rgba(99,102,241,.1);font-size:10px;font-weight:800;color:var(--indigo)}
 
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px}
-.section-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--text2)}
+/* ═══════════════ SECTION HEADER ═══════════════ */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.section-title{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.section-title svg{width:13px;height:13px}
 .section-link{font-size:11px;font-weight:800;color:var(--indigo);cursor:pointer;border:none;background:transparent}
 
-.scan-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;margin-bottom:8px;position:relative;overflow:hidden}
+/* ═══════════════ SCAN CARDS ═══════════════ */
+.scan-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;margin-bottom:7px;position:relative;overflow:hidden}
 .scan-card:active,.scan-card:hover{background:var(--inp-bg)}
-.scan-card.active-scan{border:1px solid rgba(99,102,241,.4);animation:borderPulse 2s ease-in-out infinite;background:rgba(99,102,241,.05)}
+.scan-card.active-scan{border:1px solid rgba(99,102,241,.4);animation:borderPulse 2s ease-in-out infinite;background:rgba(99,102,241,.04)}
 .scan-line-fx{position:absolute;inset-x:0;height:32px;background:linear-gradient(to bottom,rgba(99,102,241,.1),transparent);animation:scanLine 2.5s linear infinite;pointer-events:none}
-
-.file-icon-wrap{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
-.file-icon-wrap svg{width:20px;height:20px}
-.fi-pdf{background:#e11d48}
-.fi-img{background:#0d9488}
-.fi-exe{background:#ea580c}
-.fi-apk{background:#16a34a}
-.fi-doc{background:#2563eb}
-.fi-xls{background:#059669}
-.fi-ppt{background:#ea580c}
-.fi-zip{background:#d97706}
-.fi-audio{background:#7c3aed}
-.fi-video{background:#db2777}
-.fi-code{background:#0284c7}
-.fi-txt{background:#475569}
-.fi-script{background:#dc2626}
-.fi-mac{background:#4b5563}
-.fi-iso{background:#6d28d9}
-.fi-default{background:#64748b}
+.file-icon-wrap{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+/* FIX: Explicit SVG sizing in file icons */
+.file-icon-wrap svg{width:18px;height:18px;display:block;flex-shrink:0}
+.fi-pdf{background:#e11d48}.fi-img{background:#0d9488}.fi-exe{background:#ea580c}.fi-apk{background:#16a34a}
+.fi-doc{background:#2563eb}.fi-xls{background:#059669}.fi-ppt{background:#ea580c}.fi-zip{background:#d97706}
+.fi-audio{background:#7c3aed}.fi-video{background:#db2777}.fi-code{background:#0284c7}.fi-txt{background:#475569}
+.fi-script{background:#dc2626}.fi-mac{background:#4b5563}.fi-iso{background:#6d28d9}.fi-default{background:#64748b}
 .fi-indigo{background:rgba(99,102,241,.15);color:var(--indigo)}
-
 .file-info{flex:1;min-width:0}
-.file-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-.file-meta{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--text3)}
+.file-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.file-meta{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:10px;color:var(--text3)}
 .file-status{flex-shrink:0;text-align:right}
-.file-det{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:900}
-.file-det.safe{color:var(--emerald)}
-.file-det.suspicious{color:var(--amber)}
-.file-det.malicious{color:var(--rose)}
-.file-det.scanning{color:var(--indigo)}
-.file-verdict{font-size:10px;font-weight:800;opacity:.7;margin-top:2px}
-.file-verdict.safe{color:var(--emerald)}
-.file-verdict.suspicious{color:var(--amber)}
-.file-verdict.malicious{color:var(--rose)}
-
-.prog-bar{height:6px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:10px;border:1px solid var(--border)}
-.prog-fill{height:100%;background:var(--indigo);border-radius:99px;transition:width .4s ease}
-.prog-info{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-
-.cancel-btn{padding:6px 12px;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.1);color:var(--rose);font-family:'Heebo',sans-serif;transition:all .2s}
+.file-det{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:900}
+.file-det.safe{color:var(--emerald)}.file-det.suspicious{color:var(--amber)}.file-det.malicious{color:var(--rose)}.file-det.scanning{color:var(--indigo)}
+.file-verdict{font-size:10px;font-weight:800;opacity:.75;margin-top:2px}
+.file-verdict.safe{color:var(--emerald)}.file-verdict.suspicious{color:var(--amber)}.file-verdict.malicious{color:var(--rose)}
+.prog-bar{height:5px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:8px;border:1px solid var(--border)}
+.prog-fill{height:100%;background:var(--indigo);border-radius:99px;transition:width .3s ease}
+.prog-info{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.cancel-btn{padding:5px 10px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:var(--rose);font-family:'Heebo',sans-serif;transition:all .2s}
 .cancel-btn:active{background:rgba(239,68,68,.2)}
 
+/* ═══════════════ EMPTY STATE ═══════════════ */
+.empty-state{text-align:center;padding:36px 20px}
+.empty-state svg{width:44px;height:44px;margin:0 auto 12px;display:block;opacity:.2;color:var(--text3)}
+.empty-state-title{font-size:14px;font-weight:700;color:var(--text2)}
+.empty-state-sub{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+
 /* ═══════════════ HISTORY ═══════════════ */
-.history-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.h-stat{text-align:center;padding:16px;border-radius:16px;border:1px solid var(--border);background:var(--surface)}
-.h-stat-num{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:900}
-.h-stat-num.total{color:var(--text)}
-.h-stat-num.safe{color:var(--emerald)}
-.h-stat-num.threat{color:var(--rose)}
-.h-stat-lbl{font-size:10px;font-weight:700;color:var(--text3);margin-top:4px}
-.search-wrap{position:relative;margin-bottom:12px}
-.search-wrap svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3)}
-.search-inp{width:100%;padding:14px 44px 14px 16px;border-radius:12px;border:1px solid var(--inp-border);background:var(--inp-bg);color:var(--text);font-size:14px;font-family:'Heebo',sans-serif;outline:none;transition:border-color .2s}
+.history-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.h-stat{text-align:center;padding:14px;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+.h-stat-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:900}
+.h-stat-num.total{color:var(--text)}.h-stat-num.safe{color:var(--emerald)}.h-stat-num.threat{color:var(--rose)}
+.h-stat-lbl{font-size:10px;font-weight:700;color:var(--text3);margin-top:3px}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text3)}
+.search-inp{width:100%;padding:12px 40px 12px 14px;border-radius:12px;border:1px solid var(--inp-border);background:var(--inp-bg);color:var(--text);font-size:13px;font-family:'Heebo',sans-serif;outline:none;transition:border-color .2s}
 .search-inp::placeholder{color:var(--text3)}
 .search-inp:focus{border-color:var(--indigo)}
-.filter-row{display:flex;gap:8px;margin-bottom:16px}
-.filter-btn{flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid var(--border);transition:all .2s;font-family:'Heebo',sans-serif;background:var(--surface);color:var(--text2)}
+.filter-row{display:flex;gap:7px;margin-bottom:14px}
+.filter-btn{flex:1;padding:9px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--border);transition:all .2s;font-family:'Heebo',sans-serif;background:var(--surface);color:var(--text2)}
 .filter-btn.on{background:rgba(99,102,241,.1);color:var(--indigo);border-color:rgba(99,102,241,.3)}
-.history-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;cursor:pointer;margin-bottom:8px;transition:all .2s}
+.history-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;cursor:pointer;margin-bottom:7px;transition:all .2s}
 .history-item:hover{background:var(--inp-bg)}
-.det-pill{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;border:1px solid}
-.det-pill .dot{width:6px;height:6px;border-radius:50%}
+.det-pill{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:8px;border:1px solid}
+.det-pill .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .det-pill .num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:900}
 
 /* ═══════════════ SETTINGS ═══════════════ */
-.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
-.settings-section-title{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--text2)}
-.settings-section-title svg{width:14px;height:14px;color:var(--indigo)}
-.settings-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}
+.settings-section-title{display:flex;align-items:center;gap:7px;margin-bottom:14px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.settings-section-title svg{width:13px;height:13px;color:var(--indigo);flex-shrink:0}
+.settings-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
 .settings-item:last-child{border-bottom:none;padding-bottom:0}
-.settings-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--inp-bg);border:1px solid var(--border)}
-.settings-icon svg{width:20px;height:20px}
+.settings-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--inp-bg);border:1px solid var(--border)}
+.settings-icon svg{width:18px;height:18px}
 .settings-label{flex:1;min-width:0}
-.settings-label-main{font-size:14px;font-weight:700;color:var(--text)}
+.settings-label-main{font-size:13px;font-weight:700;color:var(--text)}
 .settings-label-sub{font-size:11px;color:var(--text3);margin-top:2px}
-.toggle{width:48px;height:28px;border-radius:14px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;border:none}
-.toggle.off{background:var(--inp-border)}
-.toggle.on{background:var(--indigo)}
-.toggle-knob{position:absolute;top:3px;width:22px;height:22px;border-radius:11px;background:#fff;transition:left .25s cubic-bezier(.34,1.56,.64,1)}
-.toggle.off .toggle-knob{left:3px}
-.toggle.on .toggle-knob{left:23px}
+.toggle{width:46px;height:26px;border-radius:13px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;border:none}
+.toggle.off{background:var(--inp-border)}.toggle.on{background:var(--indigo)}
+.toggle-knob{position:absolute;top:3px;width:20px;height:20px;border-radius:10px;background:#fff;transition:left .25s cubic-bezier(.34,1.56,.64,1)}
+.toggle.off .toggle-knob{left:3px}.toggle.on .toggle-knob{left:23px}
 .api-input-wrap{position:relative}
-.api-inp{width:100%;padding:14px 44px 14px 16px;border-radius:12px;border:1px solid var(--inp-border);background:var(--inp-bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;direction:ltr;transition:border-color .2s}
+.api-inp{width:100%;padding:13px 42px 13px 14px;border-radius:12px;border:1px solid var(--inp-border);background:var(--inp-bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;direction:ltr;transition:border-color .2s}
 .api-inp:focus{border-color:var(--indigo)}
 .eye-btn{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3)}
-.eye-btn svg{width:18px;height:18px}
-.save-btn{width:100%;padding:14px;background:var(--indigo);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;font-family:'Heebo',sans-serif}
+.eye-btn svg{width:17px;height:17px}
+.save-btn{width:100%;padding:13px;background:var(--indigo);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;margin-top:12px;font-family:'Heebo',sans-serif;transition:opacity .2s}
 .save-btn:active{opacity:.8}
 .vt-limits{list-style:none;padding:0}
-.vt-limit-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:12px}
+.vt-limit-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-size:12px}
 .vt-limit-item:last-child{border-bottom:none;padding-bottom:0}
 .vt-limit-val{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text)}
-.notif-request-btn{width:100%;padding:14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:12px;color:var(--indigo);font-size:13px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;margin-top:12px}
-
-.about-wrap{text-align:center;padding:32px 0 16px}
-.about-icon{width:64px;height:64px;border-radius:16px;background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
-.about-icon svg{width:32px;height:32px;color:var(--indigo)}
+.notif-request-btn{width:100%;padding:13px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:12px;color:var(--indigo);font-size:12px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;margin-top:12px;transition:background .2s}
+.notif-request-btn:active{background:rgba(99,102,241,.15)}
+.about-wrap{text-align:center;padding:24px 0 12px}
+.about-icon{width:56px;height:56px;border-radius:16px;background:rgba(99,102,241,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.about-icon svg{width:28px;height:28px;color:var(--indigo)}
 .about-name{font-size:16px;font-weight:900;color:var(--text)}
 .about-ver{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:4px}
-.about-desc{font-size:11px;color:var(--text2);line-height:1.6;max-width:260px;margin:12px auto 0}
+.about-desc{font-size:11px;color:var(--text2);line-height:1.6;max-width:260px;margin:10px auto 0}
 
-/* ═══════════════ NAV ITEMS ═══════════════ */
-.nav-items{display:flex;padding:12px 20px 24px}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;cursor:pointer;border:none;background:transparent;position:relative}
-.nav-item svg{width:22px;height:22px;color:var(--text3);transition:color .2s}
+/* ═══════════════ BOTTOM NAV ═══════════════ */
+.nav-items{display:flex;padding:10px 8px 20px}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;border:none;background:transparent;position:relative;min-width:0}
+.nav-item svg{width:22px;height:22px;color:var(--text3);transition:color .2s;flex-shrink:0}
 .nav-item.active svg{color:var(--indigo)}
-.nav-label{font-size:11px;font-weight:700;color:var(--text3);margin-top:6px;transition:color .2s}
+.nav-label{font-size:11px;font-weight:700;color:var(--text3);margin-top:5px;transition:color .2s;white-space:nowrap}
 .nav-item.active .nav-label{color:var(--indigo)}
+.nav-active-dot{position:absolute;top:2px;width:4px;height:4px;border-radius:2px;background:var(--indigo);opacity:0;transition:opacity .2s}
+.nav-item.active .nav-active-dot{opacity:1}
 
-/* ═══════════════ NOTIFICATION PANEL ITEMS ═══════════════ */
-.notif-handle{display:flex;justify-content:center;padding:12px 0 4px}
-.notif-handle-bar{width:40px;height:4px;border-radius:99px;background:var(--border)}
-.notif-header{padding:12px 20px 16px;display:flex;align-items:center;justify-content:space-between}
-.notif-title{font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
-.notif-close{background:var(--inp-bg);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2)}
-.notif-close svg{width:18px;height:18px}
-.notif-content{padding:0 16px 20px;max-height:380px;overflow-y:auto}
-.notif-empty{text-align:center;padding:60px 20px;color:var(--text3)}
-.notif-empty svg{width:64px;height:64px;margin:0 auto 16px;opacity:.3;display:block}
-.notif-scan-card{border-radius:16px;overflow:hidden;margin-bottom:10px;border:1px solid var(--border);background:var(--bg);position:relative}
+/* ═══════════════ NOTIF PANEL ═══════════════ */
+.notif-handle{display:flex;justify-content:center;padding:10px 0 4px}
+.notif-handle-bar{width:36px;height:4px;border-radius:99px;background:var(--border)}
+.notif-header{padding:10px 18px 14px;display:flex;align-items:center;justify-content:space-between}
+.notif-title{font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
+.notif-close{background:var(--inp-bg);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2)}
+.notif-close svg{width:16px;height:16px}
+.notif-content{padding:0 14px 18px;max-height:380px;overflow-y:auto}
+.notif-empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.notif-empty svg{width:56px;height:56px;margin:0 auto 14px;opacity:.25;display:block}
+.notif-scan-card{border-radius:14px;overflow:hidden;margin-bottom:9px;border:1px solid var(--border);background:var(--bg);position:relative}
 .notif-scan-line{position:absolute;inset-x:0;height:20px;background:linear-gradient(to bottom,rgba(99,102,241,.1),transparent);animation:scanLine 3s ease-in-out infinite;pointer-events:none}
-.notif-scan-inner{padding:16px}
-.notif-scan-actions{display:flex;gap:8px;margin-top:12px}
-.notif-scan-btn{flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;border:1px solid;font-family:'Heebo',sans-serif;transition:all .2s}
-.notif-scan-btn.cancel{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);color:var(--rose)}
+.notif-scan-inner{padding:14px}
+.notif-scan-actions{display:flex;gap:7px;margin-top:10px}
+.notif-scan-btn{flex:1;padding:9px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid;font-family:'Heebo',sans-serif;transition:all .2s}
+.notif-scan-btn.cancel{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--rose)}
 
-/* ═══════════════ MODAL ITEMS ═══════════════ */
+/* ═══════════════ MODAL ═══════════════ */
 .modal-scroll{overflow-y:auto;max-height:calc(92vh - 20px);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .modal-scroll::-webkit-scrollbar{display:block;width:3px}
 .modal-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
-.modal-handle{display:flex;justify-content:center;padding:12px 0 4px}
-.modal-handle-bar{width:40px;height:4px;border-radius:99px;background:var(--border)}
-.modal-header{padding:12px 24px 16px;display:flex;align-items:center;gap:12px}
-.modal-back{width:36px;height:36px;border-radius:10px;background:var(--inp-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border);color:var(--text);flex-shrink:0}
-.modal-back svg{width:18px;height:18px}
-.verdict-card{margin:0 20px 20px;padding:28px 20px;border-radius:20px;text-align:center;position:relative;overflow:hidden}
-.verdict-card.safe{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)}
-.verdict-card.suspicious{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
-.verdict-card.malicious{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)}
-.verdict-title{font-size:22px;font-weight:900;margin-top:16px}
-.verdict-title.safe{color:var(--emerald)}
-.verdict-title.suspicious{color:var(--amber)}
-.verdict-title.malicious{color:var(--rose)}
-.verdict-sub{font-size:12px;color:var(--text2);margin-top:8px;max-width:270px;margin-left:auto;margin-right:auto;line-height:1.6}
-.modal-section{margin:0 20px 20px}
-.modal-section-title{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.modal-section-title svg{width:14px;height:14px;color:var(--rose)}
-.det-ratio-bar{height:14px;border-radius:99px;overflow:hidden;background:var(--inp-bg);display:flex;margin:12px 0}
+.modal-handle{display:flex;justify-content:center;padding:10px 0 4px}
+.modal-handle-bar{width:36px;height:4px;border-radius:99px;background:var(--border)}
+.modal-header{padding:10px 20px 14px;display:flex;align-items:center;gap:10px}
+.modal-back{width:34px;height:34px;border-radius:10px;background:var(--inp-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border);color:var(--text);flex-shrink:0}
+.modal-back svg{width:16px;height:16px}
+.verdict-card{margin:0 16px 16px;padding:24px 18px;border-radius:18px;text-align:center;position:relative;overflow:hidden}
+.verdict-card.safe{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)}
+.verdict-card.suspicious{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
+.verdict-card.malicious{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+.verdict-title{font-size:20px;font-weight:900;margin-top:14px}
+.verdict-title.safe{color:var(--emerald)}.verdict-title.suspicious{color:var(--amber)}.verdict-title.malicious{color:var(--rose)}
+.verdict-sub{font-size:12px;color:var(--text2);margin-top:7px;max-width:270px;margin-left:auto;margin-right:auto;line-height:1.6}
+.modal-section{margin:0 16px 16px}
+.modal-section-title{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.modal-section-title svg{width:13px;height:13px;color:var(--rose)}
+.det-ratio-bar{height:12px;border-radius:99px;overflow:hidden;background:var(--inp-bg);display:flex;margin:10px 0}
 .det-ratio-bad{height:100%;background:var(--rose);transition:width .6s ease}
 .det-ratio-good{height:100%;background:var(--emerald);transition:width .6s ease}
 .det-ratio-labels{display:flex;justify-content:space-between;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:700}
-.modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.modal-stat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center}
-.modal-stat-num{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:900}
-.modal-stat-num.det{color:var(--rose)}
-.modal-stat-num.eng{color:var(--indigo)}
-.modal-stat-num.clean{color:var(--emerald)}
+.modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.modal-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+.modal-stat-num{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:900}
+.modal-stat-num.det{color:var(--rose)}.modal-stat-num.eng{color:var(--indigo)}.modal-stat-num.clean{color:var(--emerald)}
 .modal-stat-lbl{font-size:10px;font-weight:700;color:var(--text3);margin-top:4px}
-.wave-bars{display:flex;justify-content:center;gap:3px;margin-top:12px}
-.wave-bar{width:4px;height:18px;border-radius:99px;transform-origin:bottom}
-.engine-list{display:flex;flex-direction:column;gap:8px}
-.engine-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;animation:slideUp .2s ease both}
-.engine-dot{width:8px;height:8px;border-radius:50%;background:var(--rose);flex-shrink:0;margin-left:10px}
+.wave-bars{display:flex;justify-content:center;gap:3px;margin-top:10px}
+.wave-bar{width:4px;height:16px;border-radius:99px;transform-origin:bottom}
+.engine-list{display:flex;flex-direction:column;gap:7px}
+.engine-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:11px;animation:slideUp .2s ease both}
+.engine-dot{width:7px;height:7px;border-radius:50%;background:var(--rose);flex-shrink:0;margin-left:8px}
 .engine-name{font-size:12px;font-weight:600;color:var(--text)}
-.engine-threat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--rose);background:rgba(239,68,68,.1);padding:4px 10px;border-radius:8px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
-.file-details{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
-.file-detail-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.engine-threat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--rose);background:rgba(239,68,68,.08);padding:3px 9px;border-radius:7px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
+.file-details{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.file-detail-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--border)}
 .file-detail-row:last-child{border-bottom:none;padding-bottom:0}
 .file-detail-label{color:var(--text3)}
 .file-detail-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);text-align:left;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr}
-.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 20px 24px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 24px}
 .modal-actions.three{grid-template-columns:1fr 1fr 1fr}
-.modal-delete-btn{padding:14px;background:rgba(239,68,68,.1);color:var(--rose);border:1px solid rgba(239,68,68,.2);border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
-.modal-close-btn{padding:14px;background:var(--inp-bg);border:1px solid var(--border);border-radius:12px;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;font-family:'Heebo',sans-serif}
-.modal-vt-btn{padding:14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:12px;font-size:13px;font-weight:800;color:var(--indigo);cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
-
-.safe-msg{display:flex;align-items:flex-start;gap:12px;padding:16px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:16px}
-.safe-msg svg{width:24px;height:24px;color:var(--emerald);flex-shrink:0;margin-top:2px}
-.safe-msg-title{font-size:15px;font-weight:800;color:var(--emerald)}
+.modal-delete-btn{padding:13px;background:rgba(239,68,68,.08);color:var(--rose);border:1px solid rgba(239,68,68,.2);border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px}
+.modal-close-btn{padding:13px;background:var(--inp-bg);border:1px solid var(--border);border-radius:12px;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;font-family:'Heebo',sans-serif}
+.modal-vt-btn{padding:13px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:12px;font-size:12px;font-weight:800;color:var(--indigo);cursor:pointer;font-family:'Heebo',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none}
+.safe-msg{display:flex;align-items:flex-start;gap:10px;padding:14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:14px}
+.safe-msg svg{width:22px;height:22px;color:var(--emerald);flex-shrink:0;margin-top:1px}
+.safe-msg-title{font-size:14px;font-weight:800;color:var(--emerald)}
 .safe-msg-sub{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5}
-.hash-row{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.copy-hash-btn{padding:6px 12px;border-radius:8px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.1);color:var(--indigo);font-family:'Heebo',sans-serif;flex-shrink:0}
+.hash-row{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+.copy-hash-btn{padding:5px 10px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.08);color:var(--indigo);font-family:'Heebo',sans-serif;flex-shrink:0}
 
-/* ═══════════════ LIGHT MODE OVERRIDES ═══════════════ */
-.light .scan-card:hover{background:var(--inp-bg)}
+/* ═══════════════ LIGHT MODE ═══════════════ */
+.light .scan-card:hover,.light .history-item:hover{background:var(--inp-bg)}
 .light .toggle.off{background:var(--inp-border)}
-.light .history-item:hover{background:var(--inp-bg)}
 </style>
 </head>
 <body>
@@ -422,31 +386,60 @@ html, body {
   </div>
 
   <div class="content" id="content">
+
+    <!-- ═══ HOME PAGE ═══ -->
     <div class="page active" id="page-home">
-      <div class="hero-card">
-        <div class="hero-inner">
-          <div class="shield-wrap">
-            <div class="shield-rings" id="shieldRings">
-              <div class="ring ring-1"></div>
-              <div class="ring ring-2"></div>
-              <div class="ring ring-3"></div>
-            </div>
-            <div class="orbit-dot" id="orbitDot">
-              <div class="orbit-dot-inner"></div>
-            </div>
-            <div class="shield-box safe" id="shieldBox">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="shieldIcon">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                <path d="m9 12 2 2 4-4"/>
+
+      <!-- Upload First (Most Important) -->
+      <div class="actions-wrap">
+        <button class="action-btn" id="uploadArea"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)">
+          <div class="action-inner upload" id="uploadInner">
+            <div class="action-icon upload">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 16 12 12 8 16"/>
+                <line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
               </svg>
             </div>
+            <div class="action-label">העלה קובץ לסריקה</div>
+            <div class="upload-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+              גרור ושחרר · כל סוג קובץ
+            </div>
           </div>
-          <div class="status-pill" id="heroPill">
-            <div class="status-pill-dot"></div>
-            <span class="status-pill-text" id="heroPillText">ההגנה פעילה</span>
+        </button>
+      </div>
+
+      <!-- Hero Status Card (Compact) -->
+      <div class="hero-card">
+        <div class="hero-inner">
+          <div class="hero-status-row">
+            <div class="shield-wrap">
+              <div class="shield-rings" id="shieldRings">
+                <div class="ring ring-1"></div>
+                <div class="ring ring-2"></div>
+              </div>
+              <div class="orbit-dot" id="orbitDot"></div>
+              <div class="shield-box safe" id="shieldBox">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="shieldIcon">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="hero-text">
+              <div class="status-pill" id="heroPill">
+                <div class="status-pill-dot"></div>
+                <span class="status-pill-text" id="heroPillText">ההגנה פעילה</span>
+              </div>
+              <div class="hero-title" id="heroTitle">המכשיר מוגן</div>
+              <div class="hero-sub">70+ מנועי אנטי-וירוס בזמן אמת</div>
+            </div>
           </div>
-          <div class="hero-title" id="heroTitle">המכשיר מוגן</div>
-          <div class="hero-sub">כל העלאה נסרקת אוטומטית ע״י ה-API של VirusTotal עם 70+ מנועים</div>
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
@@ -467,39 +460,21 @@ html, body {
         </div>
       </div>
 
-      <div class="actions-wrap">
-        <button class="action-btn" id="uploadArea"
-          onclick="document.getElementById('fileInput').click()"
-          ondragover="handleDragOver(event)"
-          ondragleave="handleDragLeave(event)"
-          ondrop="handleDrop(event)">
-          <div class="action-inner upload" id="uploadInner">
-            <div class="action-icon upload">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="16 16 12 12 8 16"/>
-                <line x1="12" y1="12" x2="12" y2="21"/>
-                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-              </svg>
-            </div>
-            <div class="action-label">העלה קובץ לסריקה</div>
-            <div class="upload-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
-              גרור ושחרר · כל סוג קובץ
-            </div>
-          </div>
-        </button>
-      </div>
-
-      <div id="activeScansSection" style="display:none;margin-bottom:20px">
+      <!-- Active Scans -->
+      <div id="activeScansSection" style="display:none;margin-bottom:14px">
         <div class="section-header">
-          <div class="section-title"><div class="dot"></div> סריקות פעילות</div>
+          <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            סריקות פעילות
+          </div>
         </div>
         <div id="activeScansList"></div>
       </div>
 
+      <!-- Recent Scans -->
       <div class="section-header">
         <div class="section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           סריקות אחרונות
         </div>
         <button class="section-link" onclick="switchTab('history')">הכל ←</button>
@@ -507,18 +482,19 @@ html, body {
       <div id="recentList"></div>
     </div>
 
+    <!-- ═══ HISTORY PAGE ═══ -->
     <div class="page" id="page-history">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <h2 style="font-size:22px;font-weight:900;color:var(--text)">היסטוריה</h2>
-        <button onclick="clearHistory()" style="font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border:1px solid var(--border);background:var(--surface);padding:6px 12px;border-radius:8px;display:flex;align-items:center;gap:6px;font-family:'Heebo',sans-serif">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h2 style="font-size:20px;font-weight:900;color:var(--text)">היסטוריה</h2>
+        <button onclick="clearHistory()" style="font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;border:1px solid var(--border);background:var(--surface);padding:6px 11px;border-radius:8px;display:flex;align-items:center;gap:5px;font-family:'Heebo',sans-serif">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           נקה הכל
         </button>
       </div>
       <div class="history-stats">
-        <div class="h-stat h-stat-total"><div class="h-stat-num total" id="hStatTotal">0</div><div class="h-stat-lbl">סה״כ</div></div>
-        <div class="h-stat h-stat-safe"><div class="h-stat-num safe" id="hStatSafe">0</div><div class="h-stat-lbl">בטוחים</div></div>
-        <div class="h-stat h-stat-threat"><div class="h-stat-num threat" id="hStatThreats">0</div><div class="h-stat-lbl">איומים</div></div>
+        <div class="h-stat"><div class="h-stat-num total" id="hStatTotal">0</div><div class="h-stat-lbl">סה״כ</div></div>
+        <div class="h-stat"><div class="h-stat-num safe" id="hStatSafe">0</div><div class="h-stat-lbl">בטוחים</div></div>
+        <div class="h-stat"><div class="h-stat-num threat" id="hStatThreats">0</div><div class="h-stat-lbl">איומים</div></div>
       </div>
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -532,8 +508,9 @@ html, body {
       <div id="historyList"></div>
     </div>
 
+    <!-- ═══ SETTINGS PAGE ═══ -->
     <div class="page" id="page-settings">
-      <h2 style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:20px">הגדרות</h2>
+      <h2 style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:16px">הגדרות</h2>
 
       <div class="settings-section">
         <div class="settings-section-title">
@@ -550,9 +527,9 @@ html, body {
           </button>
         </div>
         <button class="save-btn" onclick="saveApiKey()">שמור מפתח</button>
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-top:12px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-top:2px;flex-shrink:0;color:var(--text3)"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          <p style="font-size:12px;color:var(--text2);line-height:1.5">ניתן לקבל מפתח חינמי: <a href="https://www.virustotal.com/gui/my-apikey" target="_blank" rel="noopener" style="font-weight:800;color:var(--indigo);text-decoration:none">virustotal.com/gui/my-apikey</a></p>
+        <div style="display:flex;align-items:flex-start;gap:7px;margin-top:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-top:2px;flex-shrink:0;color:var(--text3)"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <p style="font-size:11px;color:var(--text2);line-height:1.5">קבל מפתח חינמי: <a href="https://www.virustotal.com/gui/my-apikey" target="_blank" rel="noopener" style="font-weight:800;color:var(--indigo);text-decoration:none">virustotal.com/gui/my-apikey</a></p>
         </div>
       </div>
 
@@ -569,14 +546,14 @@ html, body {
             <div class="settings-label-main">הוסף למסך הבית</div>
             <div class="settings-label-sub">חוויה מלאה כאפליקציה נייטיב</div>
           </div>
-          <button onclick="installApp()" style="padding:8px 16px;background:var(--indigo);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif">התקן</button>
+          <button onclick="installApp()" style="padding:8px 14px;background:var(--indigo);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Heebo',sans-serif;flex-shrink:0">התקן</button>
         </div>
       </div>
 
       <div class="settings-section">
         <div class="settings-section-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          התראות ורקע
+          התראות ומראה
         </div>
         <div class="settings-item">
           <div class="settings-icon">
@@ -620,35 +597,40 @@ html, body {
       <div class="about-wrap">
         <div class="about-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="about-name">VT Shield</div>
-        <div class="about-ver">v4.3.0 · Powered by VirusTotal API v3</div>
-        <div class="about-desc">ממשק מתקדם המבוסס צד-לקוח לבדיקת כל סוגי הקבצים דרך 70+ מנועי אנטי-וירוס בזמן אמת.</div>
+        <div class="about-ver">v4.4.0 · Powered by VirusTotal API v3</div>
+        <div class="about-desc">ממשק מתקדם המבוסס צד-לקוח לבדיקת קבצים דרך 70+ מנועי אנטי-וירוס בזמן אמת.</div>
       </div>
     </div>
   </div>
 
+  <!-- Bottom Nav -->
   <div class="bottom-nav">
     <div class="nav-items">
       <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+        <div class="nav-active-dot"></div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <span class="nav-label">בית</span>
       </button>
       <button class="nav-item" id="nav-history" onclick="switchTab('history')">
+        <div class="nav-active-dot"></div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         <span class="nav-label">היסטוריה</span>
       </button>
       <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+        <div class="nav-active-dot"></div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span class="nav-label">הגדרות</span>
       </button>
     </div>
   </div>
 
+  <!-- Overlays -->
   <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
   <div class="notif-panel" id="notifPanel">
     <div class="notif-handle"><div class="notif-handle-bar"></div></div>
     <div class="notif-header">
       <div class="notif-title" id="notifPanelTitle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
         התראות
       </div>
       <button class="notif-close" onclick="closePanel()">
@@ -677,87 +659,73 @@ html, body {
     </div>
     <button class="install-now-btn" onclick="installApp()">התקן</button>
     <button class="install-dismiss-btn" onclick="dismissInstall()" title="סגור">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
 
   <div class="ios-install-overlay" id="iosInstallOverlay" onclick="closeIOSInstall()"></div>
   <div class="ios-install-sheet" id="iosInstallSheet">
-    <div class="modal-handle" style="padding-top:16px"><div class="modal-handle-bar"></div></div>
-    <div style="text-align:center;padding:8px 0 20px">
-      <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 10px 30px rgba(99,102,241,.4)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width:32px;height:32px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <div class="modal-handle" style="padding-top:14px"><div class="modal-handle-bar"></div></div>
+    <div style="text-align:center;padding:8px 0 18px">
+      <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 10px 30px rgba(99,102,241,.4)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width:30px;height:30px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
-      <div style="font-size:18px;font-weight:900;color:var(--text)">הוספת VT Shield למסך הבית</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:6px">עקוב אחרי השלבים הבאים ב-Safari</div>
+      <div style="font-size:17px;font-weight:900;color:var(--text)">הוספת VT Shield למסך הבית</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">עקוב אחרי השלבים הבאים ב-Safari</div>
     </div>
     <div class="ios-step">
       <div class="ios-step-num">1</div>
-      <div class="ios-step-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      </div>
-      <div class="ios-step-text">לחץ על כפתור <strong>שתף</strong> <span style="font-size:16px">⬆️</span> בתחתית Safari</div>
+      <div class="ios-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+      <div class="ios-step-text">לחץ על כפתור <strong>שתף</strong> <span style="font-size:15px">⬆️</span> בתחתית Safari</div>
     </div>
     <div class="ios-step">
       <div class="ios-step-num">2</div>
-      <div class="ios-step-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="17" x2="20" y2="17"/><line x1="17" y1="14" x2="17" y2="20"/></svg>
-      </div>
+      <div class="ios-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="17" x2="20" y2="17"/><line x1="17" y1="14" x2="17" y2="20"/></svg></div>
       <div class="ios-step-text">גלול למטה ובחר <strong>"הוסף למסך הבית"</strong></div>
     </div>
-    <div class="ios-step">
+    <div class="ios-step" style="border-bottom:none">
       <div class="ios-step-num">3</div>
-      <div class="ios-step-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
+      <div class="ios-step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="ios-step-text">לחץ <strong>"הוסף"</strong> בפינה הימנית העליונה — זהו!</div>
     </div>
     <button class="ios-close-btn" onclick="closeIOSInstall();dismissInstall()">הבנתי ✓</button>
   </div>
 
   <div class="toast" id="toast">
-    <div class="toast-icon" id="toastIcon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="toastSvg"></svg>
+    <div id="toastIcon" style="flex-shrink:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="toastSvg" style="width:20px;height:20px;display:block"></svg>
     </div>
-    <div class="toast-msg" id="toastMsg"></div>
+    <div id="toastMsg" style="font-size:13px;font-weight:700;color:var(--text)"></div>
   </div>
-
-</div> 
+</div>
 
 <input type="file" id="fileInput" style="display:none" accept="*/*" multiple onchange="handleFileSelect(event)"/>
 
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════ */
+/* ═══════════ STATE ═══════════ */
 let scans = [];
-let activeScans = {};         
+let activeScans = {};
 let currentFilter = 'all';
 let notifsEnabled = true;
 let darkMode = true;
-let deferredPrompt = null;    
+let deferredPrompt = null;
 
-const LARGE_FILE_THRESHOLD = 32 * 1024 * 1024; // 32 MB
-
+const LARGE_FILE_THRESHOLD = 32 * 1024 * 1024;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-const isInStandalone = window.matchMedia('(display-mode: standalone)').matches
-                       || window.navigator.standalone === true;
+const isInStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-/* ═══════════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════════ */
-const esc = s => String(s == null ? '' : s)
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+/* ═══════════ HELPERS ═══════════ */
+const esc = s => String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
 function sleep(ms, signal) {
   return new Promise((resolve, reject) => {
     if (signal && signal.aborted) { reject(new DOMException('Aborted','AbortError')); return; }
-    const timer = setTimeout(resolve, ms);
+    const t = setTimeout(resolve, ms);
     if (signal) {
-      const onAbort = () => { clearTimeout(timer); reject(new DOMException('Aborted','AbortError')); };
+      const onAbort = () => { clearTimeout(t); reject(new DOMException('Aborted','AbortError')); };
       signal.addEventListener('abort', onAbort, { once: true });
     }
   });
@@ -771,26 +739,46 @@ function ago(ts) {
   if (h < 24) return `לפני ${h} שע׳`;
   return `לפני ${Math.floor(h/24)} ימים`;
 }
-
 function fmtSize(bytes) {
   if (bytes >= 1073741824) return `${(bytes/1073741824).toFixed(1)} GB`;
   if (bytes >= 1048576)    return `${(bytes/1048576).toFixed(1)} MB`;
   if (bytes >= 1024)       return `${Math.floor(bytes/1024)} KB`;
   return `${bytes} B`;
 }
+function getExt(name) { return (name||'').split('.').pop().toLowerCase(); }
+function vibrate(p) { try { if(navigator.vibrate) navigator.vibrate(p); } catch(e){} }
 
-function getExt(name) { return (name || '').split('.').pop().toLowerCase(); }
-
-function vibrate(pattern) {
-  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
+/* ═══════════ SMOOTH PROGRESS HELPER ═══════════ */
+/**
+ * Animates progress from current scan value toward `target` over `durationMs`.
+ * Returns the interval ID. Call clearInterval() to stop early.
+ */
+function startProgressDrip(id, fromVal, toVal, durationMs) {
+  const startTime = Date.now();
+  updateActiveScan(id, fromVal);
+  const intervalMs = 80;
+  const interval = setInterval(() => {
+    if (!activeScans[id]) { clearInterval(interval); return; }
+    const elapsed = Date.now() - startTime;
+    const t = Math.min(elapsed / durationMs, 1);
+    // Ease out cubic for natural feel
+    const eased = 1 - Math.pow(1 - t, 3);
+    const current = fromVal + (toVal - fromVal) * eased;
+    updateActiveScan(id, current);
+    if (t >= 1) clearInterval(interval);
+  }, intervalMs);
+  return interval;
 }
 
-/* ═══════════════════════════════════════════════
-   FILE ICON SYSTEM
-═══════════════════════════════════════════════ */
+/** Gets the current progress for a scan */
+function getScanProgress(id) {
+  return scans.find(s => s.id === id)?.progress || 0;
+}
+
+/* ═══════════ FILE ICONS ═══════════ */
 function fileIconClass(name) {
   const e = getExt(name);
-  if (e === 'pdf') return 'fi-pdf';
+  if (e==='pdf') return 'fi-pdf';
   if (['jpg','jpeg','png','gif','webp','bmp','svg','ico','tiff','tif','heic','heif','avif','raw','cr2','nef'].includes(e)) return 'fi-img';
   if (['exe','msi','dll','sys','com','scr','cpl','ocx','drv'].includes(e)) return 'fi-exe';
   if (['bat','cmd','ps1','ps2','vbs','vbe','wsf','hta','sh','bash','zsh','fish'].includes(e)) return 'fi-script';
@@ -807,7 +795,6 @@ function fileIconClass(name) {
   if (['txt','md','markdown','log','ini','cfg','conf','env','htaccess','properties'].includes(e)) return 'fi-txt';
   return 'fi-default';
 }
-
 const FILE_ICONS = {
   pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
   img:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
@@ -826,47 +813,34 @@ const FILE_ICONS = {
   txt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
   default:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
 };
-
 function fileIconSVG(name) {
   const cls = fileIconClass(name).replace('fi-','');
   return FILE_ICONS[cls] || FILE_ICONS.default;
 }
-
 function statusColor(s) {
   return {safe:'var(--emerald)',suspicious:'var(--amber)',malicious:'var(--rose)',scanning:'var(--indigo)'}[s]||'var(--text3)';
 }
 function statusLabel(s) {
   return {safe:'בטוח',suspicious:'חשוד',malicious:'מסוכן',scanning:'סורק…'}[s]||'';
 }
-
 function getStats() {
   const done = scans.filter(s => s.status !== 'scanning');
-  return {
-    total: done.length,
-    safe: done.filter(s => s.status === 'safe').length,
-    threats: done.filter(s => s.status !== 'safe').length,
-  };
+  return { total:done.length, safe:done.filter(s=>s.status==='safe').length, threats:done.filter(s=>s.status!=='safe').length };
 }
 
-/* ═══════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════ */
+/* ═══════════ INIT ═══════════ */
 function init() {
   const savedKey = localStorage.getItem('vts_key');
   if (savedKey) document.getElementById('apiKeyInp').value = savedKey;
-
   const savedDark = localStorage.getItem('vts_dark');
   if (savedDark !== null) darkMode = savedDark === 'true';
-
   const savedNotifs = localStorage.getItem('vts_notifs');
   if (savedNotifs !== null) notifsEnabled = savedNotifs === 'true';
-
   try {
     const saved = localStorage.getItem('vts_scans');
     scans = saved ? JSON.parse(saved) : [];
     scans = scans.filter(s => s.status !== 'scanning');
   } catch { scans = []; }
-
   applyTheme();
   updateNotifsUI();
   renderAll();
@@ -875,14 +849,11 @@ function init() {
   setupPWAInstall();
   registerSW();
 }
-
 function saveScans() {
   try { localStorage.setItem('vts_scans', JSON.stringify(scans)); } catch(e) {}
 }
 
-/* ═══════════════════════════════════════════════
-   SERVICE WORKER
-═══════════════════════════════════════════════ */
+/* ═══════════ SERVICE WORKER ═══════════ */
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then(reg => {
@@ -892,48 +863,32 @@ function registerSW() {
         try {
           const file = new File([buffer], name, { type: fileType || 'application/octet-stream' });
           setTimeout(() => processFile(file), 600);
-        } catch(err) { /* ignore */ }
+        } catch {}
       }
     });
   }).catch(() => {});
 }
 
-/* ═══════════════════════════════════════════════
-   NETWORK MONITOR
-═══════════════════════════════════════════════ */
+/* ═══════════ NETWORK MONITOR ═══════════ */
 function setupNetworkMonitor() {
   const banner = document.getElementById('networkBanner');
   if (!banner) return;
-  
-  const update = () => {
-    const offline = !navigator.onLine;
-    if (offline) {
-      banner.classList.add('show');
-    } else {
-      banner.classList.remove('show');
-    }
-  };
-  
+  const update = () => banner.classList.toggle('show', !navigator.onLine);
   window.addEventListener('online', update);
   window.addEventListener('offline', update);
   update();
 }
 
-/* ═══════════════════════════════════════════════
-   PWA INSTALL PROMPT
-═══════════════════════════════════════════════ */
+/* ═══════════ PWA INSTALL ═══════════ */
 function setupPWAInstall() {
-  if (isInStandalone) return; 
-
+  if (isInStandalone) return;
   const dismissed = localStorage.getItem('vts_install_dismissed') === '1';
-
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredPrompt = e;
     document.getElementById('installSection').style.display = 'block';
     if (!dismissed) setTimeout(showInstallBanner, 2500);
   });
-
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     hideInstallBanner();
@@ -941,55 +896,40 @@ function setupPWAInstall() {
     showToast('VT Shield הותקנה בהצלחה! 🎉', 'success');
     vibrate([50, 30, 80]);
   });
-
   if (isIOS && !dismissed) {
     document.getElementById('installSection').style.display = 'block';
-    document.querySelector('.install-banner-sub').textContent = 'לחץ ⬆️ שתף → הוסף למסך הבית';
     setTimeout(showInstallBanner, 3000);
   }
 }
-
 function showInstallBanner() {
   if (isInStandalone) return;
   document.getElementById('installBanner').classList.add('show');
 }
-
-function hideInstallBanner() {
-  document.getElementById('installBanner').classList.remove('show');
-}
-
+function hideInstallBanner() { document.getElementById('installBanner').classList.remove('show'); }
 function dismissInstall() {
   localStorage.setItem('vts_install_dismissed', '1');
   hideInstallBanner();
 }
-
 function installApp() {
   if (isIOS) {
     showIOSInstall();
   } else if (deferredPrompt) {
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(result => {
-      deferredPrompt = null;
-      hideInstallBanner();
-    });
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; hideInstallBanner(); });
   } else {
     showToast('פתח בדפדפן Chrome/Safari כדי להתקין', 'info');
   }
 }
-
 function showIOSInstall() {
   document.getElementById('iosInstallOverlay').classList.add('show');
   document.getElementById('iosInstallSheet').classList.add('show');
 }
-
 function closeIOSInstall() {
   document.getElementById('iosInstallOverlay').classList.remove('show');
   document.getElementById('iosInstallSheet').classList.remove('show');
 }
 
-/* ═══════════════════════════════════════════════
-   THEME
-═══════════════════════════════════════════════ */
+/* ═══════════ THEME ═══════════ */
 function applyTheme() {
   document.body.classList.toggle('light', !darkMode);
   document.querySelector('meta[name="theme-color"]').content = darkMode ? '#0b0c10' : '#f4f6f8';
@@ -1007,16 +947,13 @@ function applyTheme() {
     dt.classList.remove('on'); dt.classList.add('off');
   }
 }
-
 function toggleDarkMode() {
   darkMode = !darkMode;
   localStorage.setItem('vts_dark', darkMode);
   applyTheme();
 }
 
-/* ═══════════════════════════════════════════════
-   NOTIFICATIONS
-═══════════════════════════════════════════════ */
+/* ═══════════ NOTIFICATIONS ═══════════ */
 function toggleNotifications() {
   notifsEnabled = !notifsEnabled;
   localStorage.setItem('vts_notifs', notifsEnabled);
@@ -1041,26 +978,17 @@ function updateNotifPermBtn() {
   const btn = document.getElementById('notifPermBtn');
   if (!('Notification' in window) || Notification.permission === 'granted') btn.style.display = 'none';
 }
-
 async function sendBrowserNotif(filename, status, detections, totalEngines) {
   if (!notifsEnabled) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  
   const icons = {safe:'✅', suspicious:'⚠️', malicious:'🚨'};
   const bodies = {
     safe:`כל ${totalEngines} מנועי הסריקה אישרו — הקובץ נקי`,
     suspicious:`${detections} מנועים דיווחו על חשד מתוך ${totalEngines}`,
     malicious:`${detections} מנועים זיהו איום מסוכן מתוך ${totalEngines}`,
   };
-  
   const title = `${icons[status]||'📋'} ${filename} — ${statusLabel(status)}`;
-  const options = {
-    body: bodies[status] || '',
-    tag: filename + '_vts',
-    silent: status === 'safe',
-    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 rx=%2240%22 fill=%22%236366f1%22/><path d=%22M96 156s52-26 52-65V48L96 28 44 48v43c0 39 52 65 52 65z%22 fill=%22none%22 stroke=%22white%22 stroke-width=%2212%22 stroke-linejoin=%22round%22/><path d=%22M78 97l12 12 24-24%22 stroke=%22white%22 stroke-width=%2212%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22/></svg>'
-  };
-
+  const options = { body: bodies[status]||'', tag: filename+'_vts', silent: status==='safe' };
   try {
     if (navigator.serviceWorker) {
       const reg = await navigator.serviceWorker.ready;
@@ -1068,14 +996,10 @@ async function sendBrowserNotif(filename, status, detections, totalEngines) {
     } else {
       new Notification(title, options);
     }
-  } catch(e) {
-    try { new Notification(title, options); } catch(err) {}
-  }
+  } catch(e) { try { new Notification(title, options); } catch {} }
 }
 
-/* ═══════════════════════════════════════════════
-   API KEY
-═══════════════════════════════════════════════ */
+/* ═══════════ API KEY ═══════════ */
 function saveApiKey() {
   const key = document.getElementById('apiKeyInp').value.trim();
   if (key.length >= 32) {
@@ -1097,9 +1021,7 @@ function toggleApiVis() {
   }
 }
 
-/* ═══════════════════════════════════════════════
-   FILE UPLOAD
-═══════════════════════════════════════════════ */
+/* ═══════════ FILE UPLOAD ═══════════ */
 function handleDragOver(e) {
   e.preventDefault(); e.stopPropagation();
   document.getElementById('uploadInner').classList.add('drag-over');
@@ -1117,64 +1039,49 @@ function handleFileSelect(e) {
   Array.from(e.target.files).forEach(f => processFile(f));
   e.target.value = '';
 }
-
 function processFile(file) {
   if (!file || !file.name) return;
   vibrate([30]);
   startRealScan(file);
 }
 
-/* ═══════════════════════════════════════════════
-   ROBUST FETCH
-═══════════════════════════════════════════════ */
+/* ═══════════ ROBUST FETCH ═══════════ */
 async function fetchVT(url, options, isUpload = false) {
   let res;
   let usedProxy = false;
-  
   try {
     res = await fetch(url, options);
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    
     usedProxy = true;
     try {
       const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
       res = await fetch(proxyUrl, options);
     } catch (proxyErr) {
       if (proxyErr.name === 'AbortError') throw proxyErr;
-      
-      if (isUpload) {
-        throw new Error('העלאה נחסמה ע״י דפדפן (Brave) או חוסם פרסומות. אנא כבה את ההגנות לאתר זה כדי לסרוק קבצים חדשים.');
-      } else {
-        throw new Error('חיבור נחסם. נסה לכבות חוסם פרסומות ונסה שוב.');
-      }
+      if (isUpload) throw new Error('העלאה נחסמה ע״י דפדפן או חוסם פרסומות. אנא כבה את ההגנות לאתר זה.');
+      else throw new Error('חיבור נחסם. נסה לכבות חוסם פרסומות ונסה שוב.');
     }
   }
-
   const text = await res.text();
   let data = null;
   if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
+    try { data = JSON.parse(text); } catch (e) {
       if (res.status === 429) throw new Error('חרגת ממגבלת הבקשות של VirusTotal. המתן קצת ונסה שוב.');
       if (res.status >= 500) throw new Error(`שגיאת שרת מרוחק (${res.status}). נסה שוב מאוחר יותר.`);
-      if (usedProxy) throw new Error('שגיאה: התקשורת משובשת. מומלץ לכבות את מגן הפרטיות בדפדפן לאתר זה.');
+      if (usedProxy) throw new Error('שגיאה: כבה את מגן הפרטיות בדפדפן לאתר זה.');
       throw new Error('התקבל נתון שגוי מהשרת.');
     }
   }
-
   return { ok: res.ok, status: res.status, data };
 }
 
-/* ═══════════════════════════════════════════════
-   REAL SCAN — VirusTotal API v3 (Live Simulation)
-═══════════════════════════════════════════════ */
+/* ═══════════ REAL SCAN (SMOOTH PROGRESS) ═══════════ */
 async function calculateLocalHash(file) {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 async function startRealScan(file) {
@@ -1184,10 +1091,7 @@ async function startRealScan(file) {
     switchTab('settings');
     return;
   }
-  if (!navigator.onLine) {
-    showToast('אין חיבור לאינטרנט', 'error');
-    return;
-  }
+  if (!navigator.onLine) { showToast('אין חיבור לאינטרנט', 'error'); return; }
 
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const sz = fmtSize(file.size);
@@ -1197,77 +1101,83 @@ async function startRealScan(file) {
     id, filename: file.name, size: sz,
     status: 'scanning', detections: 0, totalEngines: 0,
     timestamp: Date.now(), hash: null,
-    progress: 0, verdict: 'מחשב חתימה דיגיטלית...',
+    progress: 0, verdict: 'מתחיל...',
     source: 'העלאה', realThreats: [],
   };
   scans.unshift(scan);
-
   const abort = new AbortController();
   activeScans[id] = abort;
   renderAll();
   updateHeaderDot();
 
-  let uploadProgressInterval = null;
-  let visualProgressInterval = null;
+  // ── Active progress intervals (all cleaned up in finally) ──
+  let phaseInterval = null;
+
+  const clearPhase = () => { if (phaseInterval) { clearInterval(phaseInterval); phaseInterval = null; } };
 
   try {
+    // ── Phase 1: Hash calculation (0% → 15%) ──
     updateScanVerdict(id, 'מחשב Hash מקומי...');
+    phaseInterval = startProgressDrip(id, 0, 15, 2500);
     const localHash = await calculateLocalHash(file);
-    updateActiveScan(id, 10);
+    clearPhase();
 
     if (!activeScans[id]) return;
 
+    // ── Phase 2: DB lookup (15% → 32%) ──
+    const p2start = getScanProgress(id);
     updateScanVerdict(id, 'בודק מאגר עולמי...');
+    phaseInterval = startProgressDrip(id, p2start, 32, 3000);
     const hashRes = await fetchVT(`https://www.virustotal.com/api/v3/files/${localHash}`, {
       headers: { 'x-apikey': apiKey },
       signal: abort.signal,
     });
+    clearPhase();
+
+    if (!activeScans[id]) return;
 
     let finalData = null;
-    let pollData = null;
+    let pollData  = null;
     let analysisId = null;
 
-    if (hashRes.ok && hashRes.data && hashRes.data.data) {
-      // קובץ קיים במאגר
+    if (hashRes.ok && hashRes.data?.data) {
+      // ── Cache hit: 32% → 96% ──
+      updateScanVerdict(id, 'קיים במאגר — שולף תוצאות...');
+      phaseInterval = startProgressDrip(id, getScanProgress(id), 96, 1800);
+      await sleep(1800, abort.signal);
+      clearPhase();
       finalData = hashRes.data.data;
-      updateActiveScan(id, 95);
     } else {
-      // קובץ חדש - העלאה
+      // ── Phase 3: Upload (32% → 68%) ──
       let uploadUrl = 'https://www.virustotal.com/api/v3/files';
+
       if (isLarge) {
-        updateScanVerdict(id, 'מקבל URL להעלאה...');
+        updateScanVerdict(id, 'מקבל URL להעלאה גדולה...');
         const urlRes = await fetchVT('https://www.virustotal.com/api/v3/files/upload_url', {
-          headers: { 'x-apikey': apiKey },
-          signal: abort.signal,
+          headers: { 'x-apikey': apiKey }, signal: abort.signal,
         });
         if (!urlRes.ok) {
           if (urlRes.status === 401) throw new Error('מפתח שגוי');
           if (urlRes.status === 403) throw new Error('נדרש מפתח פרמיום לקבצים גדולים');
           if (urlRes.status === 429) throw new Error('חרגת ממגבלת ה-API');
-          throw new Error(`שגיאה בקבלת URL`);
+          throw new Error('שגיאה בקבלת URL');
         }
         uploadUrl = urlRes.data?.data;
       }
 
-      updateScanVerdict(id, 'מעלה קובץ...');
-      let uploadProg = 10;
-      uploadProgressInterval = setInterval(() => {
-        uploadProg = Math.min(uploadProg + (isLarge ? 0.4 : 3), 82);
-        updateActiveScan(id, uploadProg);
-      }, isLarge ? 4000 : 800);
+      updateScanVerdict(id, 'מעלה קובץ לשרת...');
+      const uploadDuration = isLarge ? 35000 : Math.max(3000, Math.min(file.size / 5000, 15000));
+      phaseInterval = startProgressDrip(id, getScanProgress(id), 68, uploadDuration);
 
       const formData = new FormData();
       formData.append('file', file, file.name);
-
       const uploadRes = await fetchVT(uploadUrl, {
         method: 'POST',
         headers: { 'x-apikey': apiKey },
         body: formData,
         signal: abort.signal,
       }, true);
-
-      clearInterval(uploadProgressInterval);
-      uploadProgressInterval = null;
+      clearPhase();
 
       if (!uploadRes.ok) {
         if (uploadRes.status === 401) throw new Error('מפתח שגוי');
@@ -1279,83 +1189,88 @@ async function startRealScan(file) {
       analysisId = uploadRes.data?.data?.id;
       if (!analysisId) throw new Error('השרת לא החזיר מזהה סריקה');
 
-      /* ── Live Scanner Simulation (To prevent API ban) ── */
-      updateActiveScan(id, 86);
-      
-      const engines = ['Avast', 'BitDefender', 'Kaspersky', 'ESET', 'Malwarebytes', 'McAfee', 'Microsoft', 'Sophos', 'Symantec', 'TrendMicro', 'Cylance', 'CrowdStrike'];
-      let fakeIdx = 0;
-      let visualProg = 86;
-      
-      visualProgressInterval = setInterval(() => {
-        if (!activeScans[id]) { clearInterval(visualProgressInterval); return; }
-        if (visualProg < 98) {
-          updateScanVerdict(id, `סורק מנוע: ${engines[fakeIdx % engines.length]}...`);
-          fakeIdx++;
-        }
-        visualProg = Math.min(visualProg + 0.25, 98);
-        updateActiveScan(id, visualProg);
-      }, 1500);
+      // ── Phase 4: Wait for engines (68% → 88% over 15 seconds) ──
+      const engines = ['Avast','BitDefender','Kaspersky','ESET','Malwarebytes','McAfee','Microsoft','Sophos','Symantec','TrendMicro','Cylance','CrowdStrike','DrWeb','Fortinet','Norton','Panda'];
+      let engineIdx = 0;
+      const p4start = getScanProgress(id);
+      phaseInterval = startProgressDrip(id, p4start, 88, 15000);
 
-      // Wait 15 seconds before polling so VT can actually scan, avoiding 429 ban
+      // Update verdict text during wait
+      const verdictInterval = setInterval(() => {
+        if (!activeScans[id]) { clearInterval(verdictInterval); return; }
+        updateScanVerdict(id, `בודק עם: ${engines[engineIdx % engines.length]}...`);
+        engineIdx++;
+      }, 1600);
+
       await sleep(15000, abort.signal);
+      clearInterval(verdictInterval);
+      clearPhase();
 
+      if (!activeScans[id]) return;
+
+      // ── Phase 5: Polling (88% → 97%, spread over up to 15 polls × 12s) ──
       let pollCount = 0;
-      while (!finalData && activeScans[id] && pollCount < 15) {
+      const maxPolls = 15;
+      const p5start = getScanProgress(id);
+      const p5range = 97 - p5start;
+
+      while (!finalData && activeScans[id] && pollCount < maxPolls) {
         pollCount++;
+        const p5target = p5start + p5range * (pollCount / maxPolls);
+        phaseInterval = startProgressDrip(id, getScanProgress(id), p5target, 12000);
+
         try {
           const pollRes = await fetchVT(
             `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
             { headers: { 'x-apikey': apiKey }, signal: abort.signal }
           );
-          
           if (pollRes.status === 429) {
             updateScanVerdict(id, 'ממתין לשרת (עומס תעבורה)...');
-            await sleep(20000, abort.signal); // Force wait to unban key
+            clearPhase();
+            await sleep(20000, abort.signal);
             continue;
           }
           if (!pollRes.ok && pollRes.status !== 404) throw new Error('שגיאת שרת');
-
           pollData = pollRes.data;
           const attrs = pollData?.data?.attributes;
-          if (attrs && attrs.status === 'completed') {
+          if (attrs?.status === 'completed') {
             finalData = pollData.data;
+            clearPhase();
             break;
           }
-          
-          // Poll every 12 seconds to stay deep under 4/min limit
+          updateScanVerdict(id, `ממתין לתוצאות... (${pollCount}/${maxPolls})`);
           await sleep(12000, abort.signal);
         } catch (pollErr) {
           if (pollErr.name === 'AbortError') throw pollErr;
+          clearPhase();
           await sleep(5000, abort.signal);
         }
+        clearPhase();
       }
-      
-      clearInterval(visualProgressInterval);
-      visualProgressInterval = null;
 
       if (!activeScans[id]) return;
-      if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן');
+      if (!finalData) throw new Error('הסריקה לקחה יותר מדי זמן. נסה שוב.');
     }
 
-    /* ── Process Results ─────────────────────────── */
+    /* ── Process Results ── */
     const attrs   = finalData.attributes || {};
     const stats   = attrs.last_analysis_stats || attrs.stats || {};
     const results = attrs.last_analysis_results || attrs.results || {};
 
     const hash = finalData?.meta?.file_info?.sha256 || pollData?.data?.meta?.file_info?.sha256 || attrs.sha256 || localHash || null;
-    const detections   = (stats.malicious || 0) + (stats.suspicious || 0);
-    const totalEngines = Object.keys(results).length || ((stats.harmless||0) + (stats.malicious||0) + (stats.suspicious||0) + (stats.undetected||0) + (stats.timeout||0)) || 1;
+    const detections   = (stats.malicious||0) + (stats.suspicious||0);
+    const totalEngines = Object.keys(results).length || ((stats.harmless||0)+(stats.malicious||0)+(stats.suspicious||0)+(stats.undetected||0)+(stats.timeout||0)) || 1;
 
     let targetStatus = 'safe';
-    if (stats.malicious > 0) targetStatus = 'malicious';
+    if (stats.malicious > 0)      targetStatus = 'malicious';
     else if (stats.suspicious > 0) targetStatus = 'suspicious';
 
     const realThreats = Object.entries(results)
-      .filter(([,v]) => v.category === 'malicious' || v.category === 'suspicious')
-      .map(([engine, v]) => ({ engine, threat: v.result || 'איום זוהה' }))
-      .sort((a, b) => a.engine.localeCompare(b.engine));
+      .filter(([,v]) => v.category==='malicious'||v.category==='suspicious')
+      .map(([engine,v]) => ({ engine, threat: v.result||'איום זוהה' }))
+      .sort((a,b) => a.engine.localeCompare(b.engine));
 
-    const verdict = targetStatus === 'safe' ? 'קובץ בטוח' : targetStatus === 'malicious' ? 'קובץ מסוכן' : 'קובץ חשוד';
+    const verdict = targetStatus==='safe' ? 'קובץ בטוח' : targetStatus==='malicious' ? 'קובץ מסוכן' : 'קובץ חשוד';
 
     delete activeScans[id];
     const fidx = scans.findIndex(s => s.id === id);
@@ -1363,11 +1278,9 @@ async function startRealScan(file) {
       scans[fidx] = { ...scans[fidx], status: targetStatus, detections, totalEngines, progress: 100, verdict, hash, realThreats };
       saveScans();
       renderAll();
-      vibrate(targetStatus === 'safe' ? [40] : [80, 40, 80, 40, 120]);
-      if (notifsEnabled) {
-        showToast(targetStatus === 'safe' ? `✓ ${file.name} — בטוח` : `⚠ ${file.name} — ${verdict}`, targetStatus === 'safe' ? 'success' : 'error');
-        sendBrowserNotif(file.name, targetStatus, detections, totalEngines);
-      }
+      vibrate(targetStatus==='safe' ? [40] : [80,40,80,40,120]);
+      showToast(targetStatus==='safe' ? `✓ ${file.name} — בטוח` : `⚠ ${file.name} — ${verdict}`, targetStatus==='safe' ? 'success' : 'error');
+      sendBrowserNotif(file.name, targetStatus, detections, totalEngines);
       setTimeout(() => openModal(id), 400);
     }
 
@@ -1378,15 +1291,14 @@ async function startRealScan(file) {
     saveScans();
     renderAll();
     showToast(err.message || 'שגיאת רשת', 'error');
-    vibrate([100, 50, 100]);
+    vibrate([100,50,100]);
   } finally {
-    if (uploadProgressInterval) clearInterval(uploadProgressInterval);
-    if (visualProgressInterval) clearInterval(visualProgressInterval);
+    clearPhase();
     updateHeaderDot();
     renderActiveSection();
   }
 }
-  
+
 function cancelScan(id) {
   const ctrl = activeScans[id];
   if (ctrl) ctrl.abort();
@@ -1402,16 +1314,11 @@ function cancelScan(id) {
 function updateScanVerdict(id, text) {
   const fidx = scans.findIndex(s => s.id === id);
   if (fidx >= 0) scans[fidx].verdict = text;
-  const metaEl = document.querySelector(`#asc-${id} .file-meta`);
-  if (metaEl) {
-    const parts = metaEl.textContent.split('·');
-    if (parts.length >= 2) metaEl.childNodes[0].textContent = parts[0];
-  }
+  const pvtEl = document.getElementById(`pvt-${id}`);
+  if (pvtEl) pvtEl.textContent = text;
 }
 
-/* ═══════════════════════════════════════════════
-   RENDER
-═══════════════════════════════════════════════ */
+/* ═══════════ RENDER ═══════════ */
 function renderAll() {
   renderActiveSection();
   renderRecent();
@@ -1427,7 +1334,6 @@ function updateHeaderDot() {
   const badge = document.getElementById('notifBadge');
   badge.textContent = count;
   badge.classList.toggle('show', count > 0);
-
   const heroPill = document.getElementById('heroPill');
   const heroPillText = document.getElementById('heroPillText');
   const heroTitle = document.getElementById('heroTitle');
@@ -1444,12 +1350,9 @@ function updateHeaderDot() {
 
 function updateHeroShield() {
   const activeCount = Object.keys(activeScans).length;
-  const box   = document.getElementById('shieldBox');
-  const icon  = document.getElementById('shieldIcon');
-  const orbit = document.getElementById('orbitDot');
-  const rings = document.getElementById('shieldRings');
-  orbit.classList.toggle('show', activeCount > 0);
-  rings.className = 'shield-rings' + (activeCount > 0 ? ' scanning' : '');
+  const box  = document.getElementById('shieldBox');
+  const icon = document.getElementById('shieldIcon');
+  if (!box || !icon) return;
   if (activeCount > 0) {
     box.className = 'shield-box scanning';
     icon.innerHTML = '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>';
@@ -1461,11 +1364,11 @@ function updateHeroShield() {
 
 function updateStats() {
   const s = getStats();
-  document.getElementById('statTotal').textContent   = s.total;
-  document.getElementById('statThreats').textContent = s.threats;
-  document.getElementById('hStatTotal').textContent  = s.total;
-  document.getElementById('hStatSafe').textContent   = s.safe;
-  document.getElementById('hStatThreats').textContent= s.threats;
+  document.getElementById('statTotal').textContent    = s.total;
+  document.getElementById('statThreats').textContent  = s.threats;
+  document.getElementById('hStatTotal').textContent   = s.total;
+  document.getElementById('hStatSafe').textContent    = s.safe;
+  document.getElementById('hStatThreats').textContent = s.threats;
 }
 
 function renderActiveSection() {
@@ -1479,7 +1382,7 @@ function renderActiveSection() {
       <div class="file-icon-wrap fi-indigo">${fileIconSVG(s.filename)}</div>
       <div class="file-info">
         <div class="file-name">${esc(s.filename)}</div>
-        <div class="file-meta">${esc(s.size)} · ${esc(s.verdict)}</div>
+        <div class="file-meta">${esc(s.size)}</div>
         <div class="prog-bar"><div class="prog-fill" id="pf-${s.id}" style="width:${s.progress}%"></div></div>
         <div class="prog-info">
           <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3)" id="pvt-${s.id}">${esc(s.verdict)}</span>
@@ -1508,7 +1411,7 @@ function updateActiveScan(id, prog) {
 }
 
 function renderRecent() {
-  const recent = scans.filter(s => s.status !== 'scanning').slice(0, 5);
+  const recent = scans.filter(s => s.status !== 'scanning').slice(0,5);
   const el = document.getElementById('recentList');
   if (!recent.length) {
     el.innerHTML = `<div class="empty-state">
@@ -1518,8 +1421,8 @@ function renderRecent() {
     </div>`;
     return;
   }
-  el.innerHTML = recent.map((s, i) => `
-    <div class="scan-card" style="animation:slideUp .2s ease ${i * .04}s both" onclick="openModal('${s.id}')">
+  el.innerHTML = recent.map((s,i) => `
+    <div class="scan-card" style="animation:slideUp .2s ease ${i*.04}s both" onclick="openModal('${s.id}')">
       <div class="file-icon-wrap ${fileIconClass(s.filename)}">${fileIconSVG(s.filename)}</div>
       <div class="file-info">
         <div class="file-name">${esc(s.filename)}</div>
@@ -1534,13 +1437,12 @@ function renderRecent() {
 }
 
 function renderHistory() {
-  const q = (document.getElementById('searchInp') || {value:''}).value.toLowerCase().trim();
+  const q = (document.getElementById('searchInp')||{value:''}).value.toLowerCase().trim();
   let list = scans.filter(s => s.status !== 'scanning');
   if (currentFilter === 'safe')    list = list.filter(s => s.status === 'safe');
   if (currentFilter === 'threats') list = list.filter(s => s.status !== 'safe');
   if (q) list = list.filter(s => s.filename.toLowerCase().includes(q));
-  list.sort((a, b) => b.timestamp - a.timestamp);
-
+  list.sort((a,b) => b.timestamp - a.timestamp);
   const el = document.getElementById('historyList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-state">
@@ -1550,14 +1452,14 @@ function renderHistory() {
     return;
   }
   const clr = {safe:'rgba(16,185,129,',suspicious:'rgba(245,158,11,',malicious:'rgba(239,68,68,'};
-  el.innerHTML = list.map((s, i) => `
+  el.innerHTML = list.map((s,i) => `
     <div class="history-item" style="animation:slideUp .18s ease ${Math.min(i*.025,.2)}s both" onclick="openModal('${s.id}')">
       <div class="file-icon-wrap ${fileIconClass(s.filename)}">${fileIconSVG(s.filename)}</div>
       <div class="file-info">
         <div class="file-name">${esc(s.filename)}</div>
         <div class="file-meta">${esc(s.size)} · ${new Date(s.timestamp).toLocaleDateString('he-IL')}</div>
       </div>
-      <div class="det-pill" style="background:${(clr[s.status]||'rgba(100,116,139,')}.08);border-color:${(clr[s.status]||'rgba(100,116,139,')+'.15)'}">
+      <div class="det-pill" style="background:${(clr[s.status]||'rgba(100,116,139,')}.08);border-color:${(clr[s.status]||'rgba(100,116,139,')+'.18)'}">
         <div class="dot" style="background:${statusColor(s.status)}"></div>
         <div class="num ${s.status}">${s.detections}/${s.totalEngines}</div>
       </div>
@@ -1565,22 +1467,18 @@ function renderHistory() {
   `).join('');
 }
 
-/* ═══════════════════════════════════════════════
-   FILTERS
-═══════════════════════════════════════════════ */
+/* ═══════════ FILTERS ═══════════ */
 function setFilter(f) {
   currentFilter = f;
   ['all','safe','threats'].forEach(x => {
     const id = 'f' + x.charAt(0).toUpperCase() + x.slice(1);
     const btn = document.getElementById(id);
-    if (btn) btn.className = 'filter-btn ' + (x === f ? 'on' : 'off');
+    if (btn) btn.className = 'filter-btn ' + (x===f ? 'on' : 'off');
   });
   renderHistory();
 }
 
-/* ═══════════════════════════════════════════════
-   MODAL
-═══════════════════════════════════════════════ */
+/* ═══════════ MODAL ═══════════ */
 function openModal(scanId) {
   const scan = scans.find(s => s.id === scanId);
   if (!scan || scan.status === 'scanning') return;
@@ -1589,11 +1487,11 @@ function openModal(scanId) {
     <button class="modal-back" onclick="closeModal()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="19 12 5 12"/><polyline points="12 19 5 12 12 5"/></svg>
     </button>
-    <div class="file-icon-wrap ${fileIconClass(scan.filename)}" style="width:44px;height:44px;border-radius:16px;flex-shrink:0">
+    <div class="file-icon-wrap ${fileIconClass(scan.filename)}" style="width:42px;height:42px;border-radius:14px;flex-shrink:0">
       ${fileIconSVG(scan.filename)}
     </div>
     <div style="min-width:0">
-      <div style="font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">${esc(scan.filename)}</div>
+      <div style="font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">${esc(scan.filename)}</div>
       <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px">${esc(scan.size)}</div>
     </div>
   `;
@@ -1603,7 +1501,7 @@ function openModal(scanId) {
   const safeRatioW = (((safeTotalEngines - scan.detections) / safeTotalEngines) * 100).toFixed(1);
 
   let enginesHTML = '';
-  if (scan.detections > 0 && scan.realThreats && scan.realThreats.length > 0) {
+  if (scan.detections > 0 && scan.realThreats?.length > 0) {
     enginesHTML = `
       <div class="modal-section">
         <div class="modal-section-title">
@@ -1611,16 +1509,16 @@ function openModal(scanId) {
           מנועים שזיהו איום (${scan.realThreats.length})
         </div>
         <div class="engine-list">
-          ${scan.realThreats.slice(0, 30).map((t, i) => `
-            <div class="engine-item" style="animation-delay:${i * .03}s">
-              <div style="display:flex;align-items:center;gap:10px">
+          ${scan.realThreats.slice(0,30).map((t,i) => `
+            <div class="engine-item" style="animation-delay:${i*.03}s">
+              <div style="display:flex;align-items:center;gap:8px">
                 <div class="engine-dot"></div>
                 <span class="engine-name">${esc(t.engine)}</span>
               </div>
               <span class="engine-threat">${esc(t.threat)}</span>
             </div>
           `).join('')}
-          ${scan.realThreats.length > 30 ? `<div style="text-align:center;font-size:10px;color:var(--text3);padding:8px">ועוד ${scan.realThreats.length - 30} מנועים…</div>` : ''}
+          ${scan.realThreats.length > 30 ? `<div style="text-align:center;font-size:10px;color:var(--text3);padding:7px">ועוד ${scan.realThreats.length-30} מנועים…</div>` : ''}
         </div>
       </div>`;
   }
@@ -1636,11 +1534,11 @@ function openModal(scanId) {
       </div>
     </div>` : '';
 
-  const waveBars = Array.from({length:12}, (_,i) =>
-    `<div class="wave-bar" style="background:${i < scan.detections ? 'var(--rose)':'rgba(99,102,241,.2)'};animation:wave 1.2s ease-in-out ${i*.08}s infinite"></div>`
+  const waveBars = Array.from({length:12},(_,i)=>
+    `<div class="wave-bar" style="background:${i<scan.detections?'var(--rose)':'rgba(99,102,241,.2)'};animation:wave 1.2s ease-in-out ${i*.08}s infinite"></div>`
   ).join('');
 
-  const hashDisplay = scan.hash ? scan.hash.substring(0,16) + '…' : null;
+  const hashDisplay = scan.hash ? scan.hash.substring(0,16)+'…' : null;
   const vtLink = scan.hash ? `https://www.virustotal.com/gui/file/${scan.hash}` : null;
 
   const shieldSvg = scan.status === 'safe'
@@ -1652,16 +1550,16 @@ function openModal(scanId) {
   const hasThree = scan.status !== 'safe' && vtLink;
   document.getElementById('modalContent').innerHTML = `
     <div class="verdict-card ${scan.status}">
-      <div style="display:flex;justify-content:center;margin-bottom:8px">
-        <div class="shield-box ${scan.status}" style="position:static;transform:none">
+      <div style="display:flex;justify-content:center;margin-bottom:6px">
+        <div class="shield-box ${scan.status}" style="position:static;transform:none;width:52px;height:52px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${shieldSvg}</svg>
         </div>
       </div>
       <div class="verdict-title ${scan.status}">${esc(scan.verdict)}</div>
       <div class="verdict-sub">
-        ${scan.status === 'safe'
+        ${scan.status==='safe'
           ? `${scan.totalEngines} מנועי אנטי-וירוס אישרו שהקובץ בטוח`
-          : scan.status === 'malicious'
+          : scan.status==='malicious'
           ? `${scan.detections} מנועים זיהו את הקובץ כמסוכן. מומלץ למחוק!`
           : `${scan.detections} מנועים דיווחו על חשד. נדרשת בדיקה נוספת.`}
       </div>
@@ -1670,7 +1568,7 @@ function openModal(scanId) {
     <div class="modal-section">
       <div class="modal-stats">
         <div class="modal-stat">
-          <div class="modal-stat-num ${scan.detections > 0 ? 'det' : 'clean'}">${scan.detections}</div>
+          <div class="modal-stat-num ${scan.detections>0?'det':'clean'}">${scan.detections}</div>
           <div class="modal-stat-lbl">זיהויים</div>
           <div class="wave-bars">${waveBars}</div>
         </div>
@@ -1690,7 +1588,7 @@ function openModal(scanId) {
       </div>
       <div class="det-ratio-labels">
         <span style="color:var(--rose)">🔴 ${scan.detections} זיהוי</span>
-        <span style="color:var(--emerald)">🟢 ${safeTotalEngines - scan.detections} בטוח</span>
+        <span style="color:var(--emerald)">🟢 ${safeTotalEngines-scan.detections} בטוח</span>
       </div>
     </div>
 
@@ -1708,9 +1606,9 @@ function openModal(scanId) {
           <span class="file-detail-label">תאריך סריקה</span>
           <span class="file-detail-val">${new Date(scan.timestamp).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'})}</span>
         </div>
-        <div class="file-detail-row" style="${hashDisplay ? '' : 'border-bottom:none;padding-bottom:0'}">
+        <div class="file-detail-row" style="${hashDisplay?'':'border-bottom:none;padding-bottom:0'}">
           <span class="file-detail-label">סוג קובץ</span>
-          <span class="file-detail-val">.${(getExt(scan.filename)||'').toUpperCase() || 'לא ידוע'}</span>
+          <span class="file-detail-val">.${(getExt(scan.filename)||'').toUpperCase()||'לא ידוע'}</span>
         </div>
         ${hashDisplay ? `
         <div class="file-detail-row" style="border-bottom:none;padding-bottom:0">
@@ -1723,15 +1621,15 @@ function openModal(scanId) {
       </div>
     </div>
 
-    <div class="modal-actions ${hasThree ? 'three' : ''}">
-      ${scan.status !== 'safe' ? `
+    <div class="modal-actions ${hasThree?'three':''}">
+      ${scan.status!=='safe' ? `
         <button class="modal-delete-btn" onclick="deleteFromModal('${scan.id}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           מחק
         </button>` : ''}
       ${vtLink ? `
         <a href="${esc(vtLink)}" target="_blank" rel="noopener" class="modal-vt-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           VirusTotal
         </a>` : ''}
       <button class="modal-close-btn" onclick="closeModal()">סגור</button>
@@ -1746,41 +1644,27 @@ function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
   document.getElementById('scanModal').classList.remove('show');
 }
-
 function deleteFromModal(id) {
   scans = scans.filter(s => s.id !== id);
-  saveScans();
-  renderAll();
-  closeModal();
+  saveScans(); renderAll(); closeModal();
   showToast('הוסר מההיסטוריה', 'success');
 }
-
 function copyHash(hash) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(hash)
-      .then(() => showToast('SHA-256 הועתק ✓', 'success'))
-      .catch(() => copyHashFallback(hash));
-  } else {
-    copyHashFallback(hash);
-  }
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(hash).then(() => showToast('SHA-256 הועתק ✓','success')).catch(() => copyHashFallback(hash));
+  } else { copyHashFallback(hash); }
 }
-
 function copyHashFallback(hash) {
   try {
     const el = document.createElement('textarea');
-    el.value = hash; el.style.position = 'fixed'; el.style.opacity = '0';
+    el.value = hash; el.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(el); el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    showToast('SHA-256 הועתק ✓', 'success');
-  } catch(e) {
-    showToast('לא ניתן להעתיק', 'error');
-  }
+    document.execCommand('copy'); document.body.removeChild(el);
+    showToast('SHA-256 הועתק ✓','success');
+  } catch { showToast('לא ניתן להעתיק','error'); }
 }
 
-/* ═══════════════════════════════════════════════
-   NOTIFICATION PANEL
-═══════════════════════════════════════════════ */
+/* ═══════════ NOTIFICATION PANEL ═══════════ */
 function togglePanel() {
   const panel = document.getElementById('notifPanel');
   if (panel.classList.contains('open')) { closePanel(); return; }
@@ -1788,46 +1672,38 @@ function togglePanel() {
   panel.classList.add('open');
   document.getElementById('panelOverlay').classList.add('show');
 }
-
 function closePanel() {
   document.getElementById('notifPanel').classList.remove('open');
   document.getElementById('panelOverlay').classList.remove('show');
 }
-
 function renderNotifPanel() {
   const active  = scans.filter(s => s.status === 'scanning');
   const titleEl = document.getElementById('notifPanelTitle');
   const content = document.getElementById('notifContent');
-
   titleEl.innerHTML = active.length > 0
-    ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--indigo);animation:statusDot 2s ease-in-out infinite"></div> סריקות פעילות (${active.length})`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg> התראות`;
-
+    ? `<div style="width:7px;height:7px;border-radius:50%;background:var(--indigo);animation:statusDot 2s ease-in-out infinite"></div> סריקות פעילות (${active.length})`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg> התראות`;
   if (!active.length) {
-    content.innerHTML = `
-      <div class="notif-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-        <div style="font-size:14px;font-weight:700;color:var(--text2)">הכל בטוח</div>
-        <div style="font-size:11px;margin-top:4px">אין סריקות פעילות כרגע</div>
-      </div>`;
+    content.innerHTML = `<div class="notif-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      <div style="font-size:13px;font-weight:700;color:var(--text2)">הכל בטוח</div>
+      <div style="font-size:11px;margin-top:4px">אין סריקות פעילות כרגע</div>
+    </div>`;
     return;
   }
-
   content.innerHTML = active.map(s => `
     <div class="notif-scan-card" id="nsc-${s.id}">
       <div class="notif-scan-line"></div>
       <div class="notif-scan-inner">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="file-icon-wrap fi-indigo" style="width:36px;height:36px;border-radius:12px">
-            ${fileIconSVG(s.filename)}
-          </div>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="file-icon-wrap fi-indigo" style="width:34px;height:34px;border-radius:11px">${fileIconSVG(s.filename)}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">${esc(s.filename)}</div>
             <div style="font-size:10px;color:var(--text3)">VirusTotal · ${esc(s.size)}</div>
           </div>
-          <div style="font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--indigo)" id="npct-${s.id}">${Math.round(s.progress)}%</div>
+          <div style="font-size:13px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--indigo)" id="npct-${s.id}">${Math.round(s.progress)}%</div>
         </div>
-        <div class="prog-bar" style="margin-top:10px">
+        <div class="prog-bar" style="margin-top:9px">
           <div class="prog-fill" id="npf-${s.id}" style="width:${s.progress}%"></div>
         </div>
         <div class="notif-scan-actions">
@@ -1838,58 +1714,45 @@ function renderNotifPanel() {
   `).join('');
 }
 
-/* ═══════════════════════════════════════════════
-   HISTORY
-═══════════════════════════════════════════════ */
+/* ═══════════ HISTORY ═══════════ */
 function clearHistory() {
-  if (!scans.filter(s => s.status !== 'scanning').length) {
-    showToast('אין היסטוריה למחיקה', 'info');
-    return;
-  }
-  const ok = window.confirm('למחוק את כל ההיסטוריה?');
-  if (!ok) return;
+  if (!scans.filter(s => s.status !== 'scanning').length) { showToast('אין היסטוריה למחיקה','info'); return; }
+  if (!window.confirm('למחוק את כל ההיסטוריה?')) return;
   scans = scans.filter(s => s.status === 'scanning');
-  saveScans();
-  renderAll();
-  showToast('ההיסטוריה נמחקה', 'info');
+  saveScans(); renderAll();
+  showToast('ההיסטוריה נמחקה','info');
 }
 
-/* ═══════════════════════════════════════════════
-   TAB NAVIGATION
-═══════════════════════════════════════════════ */
+/* ═══════════ TAB NAVIGATION ═══════════ */
 function switchTab(tab) {
   ['home','history','settings'].forEach(t => {
-    document.getElementById('page-' + t).classList.toggle('active', t === tab);
-    document.getElementById('nav-'  + t).classList.toggle('active', t === tab);
+    document.getElementById('page-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
   });
   if (tab === 'history') renderHistory();
   const content = document.getElementById('content');
   if (content) content.scrollTop = 0;
 }
 
-/* ═══════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════ */
+/* ═══════════ TOAST ═══════════ */
 let toastTimer;
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
   const svg   = document.getElementById('toastSvg');
   const msgEl = document.getElementById('toastMsg');
   clearTimeout(toastTimer);
-  toast.className = `toast ${type}`;
+  toast.className = 'toast ' + type;
   msgEl.textContent = msg;
-  if (type === 'success')     svg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
-  else if (type === 'error')  svg.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/>';
-  else                        svg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/>';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => toast.classList.add('show'));
-  });
+  const toastIconEl = document.getElementById('toastIcon');
+  toastIconEl.style.color = type==='success' ? 'var(--emerald)' : type==='error' ? 'var(--rose)' : 'var(--indigo)';
+  if (type==='success')     svg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+  else if (type==='error')  svg.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/>';
+  else                      svg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/>';
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-/* ═══════════════════════════════════════════════
-   START
-═══════════════════════════════════════════════ */
+/* ═══════════ START ═══════════ */
 init();
 </script>
 </body>
