@@ -1,5 +1,5 @@
-/* VT Shield — Service Worker v4.1 */
-const CACHE = 'vt-shield-v4.1';
+/* VT Shield — Service Worker v4.2 */
+const CACHE = 'vt-shield-v4.2';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', e => {
